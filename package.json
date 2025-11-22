@@ -1,0 +1,112 @@
+{
+  "name": "intybasic-language",
+  "displayName": "IntyBASIC Language",
+  "description": "Language support for IntyBASIC.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.106.1"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "IntyBASIC Language Build & Run Settings",
+      "properties": {
+        "intybasic.compilerPath": {
+          "type": "string",
+          "default": "intybasic",
+          "description": "Absolute path to the IntyBASIC cross-compiler executable."
+        },
+        "intybasic.libraryPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the IntyBASIC standard library folder containing 'intybasic_prologue.asm' and 'intybasic_epilogue.asm' Leave empty to use the default library bundled with the cross-compiler."
+        },
+        "intybasic.assemblerPath": {
+          "type": "string",
+          "default": "as1600",
+          "description": "Absolute path to the AS1600 assembler executable (usually part of jzintv tools)."
+        },
+        "intybasic.emulatorPath": {
+          "type": "string",
+          "default": "jzintv",
+          "description": "Absolute path to the JzIntv emulator executable."
+        },
+        "intybasic.execRomPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the 'exec.bin' ROM image.  Used by jzintv with the -e switch."
+        },
+        "intybasic.gromRomPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the 'grom.bin' ROM image.  Used by jzintv with the -g switch."
+        }
+      }
+    },
+    "languages": [{
+      "id": "intybasic",
+      "aliases": ["IntyBASIC", "intybasic"],
+      "extensions": [".bas"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "intybasic",
+      "scopeName": "source.intybasic",
+      "path": "./syntaxes/intybasic.tmLanguage.json"
+    }],
+    "commands": [
+      {
+        "command": "intybasic.build",
+        "title": "IntyBASIC: Build ROM (Transpile & Assemble)"
+      },
+      {
+        "command": "intybasic.run",
+        "title": "IntyBASIC: Run ROM in Emulator"
+      },
+      {
+        "command": "intybasic.buildAndRun",
+        "title": "IntyBASIC: Build and Run ROM"
+      },
+      {
+        "command": "intybasic.clean",
+        "title": "IntyBASIC: Clean Build Artifacts"
+      }
+    ],
+    "problemMatchers": [
+        {
+            "name": "intybasic-errors",
+            "owner": "intybasic",
+            "source": "IntyBASIC",
+            "applyTo": "allDocuments",
+            "fileLocation": "absolute",
+            "pattern": {
+                "regexp": "^Error:\\s+(.*)\\s+in\\s+line\\s+(\\d+)$",
+                "message": 1,
+                "line": 2
+            }
+        }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.106.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "22.x",
+    "typescript-eslint": "^8.46.3",
+    "eslint": "^9.39.1",
+    "typescript": "^5.9.3",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2"
+  }
+}

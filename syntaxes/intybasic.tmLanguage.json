@@ -1,0 +1,190 @@
+{
+	"$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+	"name": "IntyBASIC",
+	"patterns": [
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#numbers"
+		},
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#label-definitions"
+		},
+		{
+			"include": "#variables"
+		}
+	],
+	"repository": {
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.remark.intybasic",
+					"match": "(?i:REM)\\b.*$"
+				},
+				{
+					"name": "comment.line.apostrophe.intybasic",
+					"match": "'.*$"
+				}
+			]
+			
+		},
+		"keywords": {
+			"patterns": [
+				{
+					"match": "^\\s*([a-zA-Z_][a-zA-Z0-9_]*):\\s*(?i:PROCEDURE)\\b",
+					"captures": {
+						"1": { "name": "entity.name.function.intybasic" },
+						"2": { "name": "keyword.control.intybasic" }
+					}
+				},
+				{
+					"match": "\\b(?i:ON\\s+FRAME\\s+GOSUB)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+					"captures": {
+						"0": { "name": "keyword.control.intybasic" },
+						"1": { "name": "entity.name.function.intybasic" }
+					}
+				},
+				{
+					"match": "\\b(?i:CONST)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*=",
+					"captures": {
+						"0": { "name": "meta.definition.constant.intybasic" },
+						"1": { "name": "entity.name.constant.intybasic" }
+					}
+				},
+				{
+					"match": "\\b(?i:DEF\\s+FN)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?:\\(([^)]*)\\))?\\s*=",
+					"captures": {
+						"0": { "name": "meta.definition.function.intybasic" },
+						"1": { "name": "entity.name.function.intybasic" },
+						"2": { "name": "variable.parameter.intybasic" }
+					}
+				},
+				{
+					"match": "\\b(?i:(goto|gosub|restore))\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\b",
+					"captures": {
+						"1": { "name": "keyword.control.intybasic" },
+						"2": { "name": "entity.name.label.intybasic" }
+					}
+				},
+				{
+					"name": "keyword.control.intybasic",
+					"match": "\\b(?i:EXIT\\s+(?:FOR|WHILE|DO))\\b"
+				},
+				{
+					"name": "keyword.control.intybasic",
+					"match": "\\b(?i:END\\s+IF)\\b"
+				},
+				{
+					"name": "keyword.control.intybasic",
+					"match": "\\b(?i:if|then|elseif|else|return|for|to|step|next|while|wend|do|until|loop|exit|on|procedure|end)\\b"
+				},
+				{
+					"name": "keyword.other.intybasic",
+					"match": "\\b(?i:restore|read|write|erase|flash|data|packed|varptr|define|alternate|sprite|border|mode|screen|bitmap|def fn|include|print|at|color|cls|scroll|wait|sound|scroll|play|volume|simple|full|none|drums|no|voice|init|number|poke|peek|option|warnings|explicit|on|off|stack_check|call|asm)\\b"
+				},
+				{
+					"name": "support.function.intybasic",
+					"match": "\\b(?i:ABS|SGN|CONT|CONT1|CONT2|CONT3|CONT4|COL0|COL1|COL2|COL3|COL4|COL5|COL6|COL7|RAND|RANDOM|LEN|POS|FRAME|NTSC|FLASH_FIRST|FLASH_LAST)\\b|#(?i:backtab|mobshadow)"
+				},
+				{
+					"name": "support.variable.intybasic",
+					"match": "\\b(?i:CONT|CONT1|CONT2|CONT3|CONT4)\\.(?i:UP|DOWN|LEFT|RIGHT|BUTTON|B0|B1|B2|KEY)\\b"
+				},
+				{
+					"name": "support.variable.intybasic",
+					"match": "\\b(?i:MUSIC)\\.(?i:PLAYING)\\b"
+				},
+				{
+					"name": "support.variable.intybasic",
+					"match": "\\b(?i:VOICE)\\.(?i:AVAILABLE|PLAYING)\\b"
+				},
+				{
+					"name": "storage.type.intybasic",
+					"match": "\\b(?i:dim|signed|unsigned|const)\\b"
+				},
+				{
+					"name": "keyword.operator.logical.intybasic",
+					"match": "\\b(?i:and|or|xor|not)\\b"
+				},
+				{
+					"name": "keyword.operator.comparison.intybasic",
+					"match": "(\\+|\\-|\\*|\\/|%|=|<>|<|<=|>|>=)"
+				},
+				{
+					"name": "constant.language.intybasic",
+					"match": "\\b(?i:true|false|null)\\b"
+				},
+				{
+					"name": "constant.language.voice.intybasic",
+					"match": "\\b(?i:PA5|PA4|PA3|PA2|PA1|MATTEL|ZERO|ONE|TWO|THREE|FOUR|FIVE|SIX|SEVEN|EIGHT|NINE|TEN|ELEVEN|TWELVE|THIRTEEN|FOURTEEN|FIFTEEN|SIXTEEN|SEVENTEEN|EIGHTEEN|NINETEEN|TWENTY|THIRTY|FOURTY|FIFTY|SIXTY|SEVENTY|EIGHTY|NINETY|HUNDRED|THOUSAND|TEEN|TY|PRESS|ENTER|OR|AND|AA|AE1|AO|AR|AW|AX|AY|BB1|BB2|CH|DD1|DD2|DH1|DH2|EH|EL|ER1|ER2|EY|FF|GG1|GG2|GG3|HH1|HH2|IH|IY|JH|KK1|KK2|KK3|LL|MM|NG1|NN1|NN2|OR2|OW|OY|PP|RR1|RR2|SH|SS|TH|TT1|TT2|UH|UW1|UW2|VV|WH|WW|XR2|YR|YY1|YY2|ZH|ZZ)\\b"
+				}
+			]	
+		},
+		"strings": {
+			"name": "string.quoted.double.intybasic",
+			"begin": "\"",
+			"end": "\"",
+			"patterns": [
+				{
+					"name": "constant.character.escape.intybasic",
+					"match": "\\\\."
+				}
+			]
+		},
+		"numbers": {
+			"patterns": [
+				{
+					"name": "constant.numeric.hex.intybasic",
+					"match": "\\b[\\+\\-]?[\\$][0-9a-fA-F]+\\b"
+				},
+				{
+					"name": "constant.numeric.bin.intybasic",
+					"match": "\\b[\\+\\-]?[\\&][01]+\\b"
+				},
+				{
+					"name": "constant.numeric.dec.intybasic",
+					"match": "\\b[\\+\\-]?[0-9]+\\b"
+				}
+			]
+		},
+		"label-definitions": {
+			"patterns": [
+				{
+					"match": "^\\s*([a-zA-Z_][a-zA-Z0-9_]*):",
+					"captures": {
+						"1": { "name": "entity.name.label.intybasic" },
+						"2": { "name": "punctuation.separator.label.intybasic" }
+					}
+				}
+			]
+		},
+		"variables": {
+			"patterns": [
+				{
+					"name": "variable.other.intybasic.array.16bit",
+					"match": "#[a-zA-Z][a-zA-Z0-9_]*(?=\\s*\\()"
+				},
+				{
+					"name": "variable.other.intybasic.array",
+					"match": "[a-zA-Z][a-zA-Z0-9_]*(?=\\s*\\()"
+				},
+				{
+					"name": "variable.other.intybasic.numberic.16bit",
+					"match": "\\b#[a-zA-Z][a-zA-Z0-9_]*\\b"
+				},
+				{
+					"name": "variable.other.intybasic.numeric",
+					"match": "\\b[a-zA-Z][a-zA-Z0-9_]*\\b"
+				}
+			]	
+		}
+	},
+	"scopeName": "source.intybasic"
+}
