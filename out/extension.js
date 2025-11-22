@@ -215,7 +215,11 @@ function activate(context) {
             args.push('-g', `"${JZINTV_GROM_PATH}"`);
         }
         args.push(`"${romPath}"`);
-        const runCommand = `& "${JZINTV_EMULATOR_PATH}" ${args.join(' ')}; exit 0`;
+        // Detect if we're on Windows (PowerShell) or Unix (bash/zsh)
+        const isWindows = process.platform === 'win32';
+        const runCommand = isWindows
+            ? `& "${JZINTV_EMULATOR_PATH}" ${args.join(' ')}; exit 0`
+            : `"${JZINTV_EMULATOR_PATH}" ${args.join(' ')}`;
         // Create or reuse a terminal to run the emulator
         let terminal = vscode.window.terminals.find(t => t.name === 'IntyBASIC Emulator');
         if (!terminal) {

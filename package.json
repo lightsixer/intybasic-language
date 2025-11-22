@@ -61,7 +61,7 @@
     "commands": [
       {
         "command": "intybasic.build",
-        "title": "IntyBASIC: Build ROM (Transpile & Assemble)"
+        "title": "IntyBASIC: Build ROM (Compile & Assemble)"
       },
       {
         "command": "intybasic.run",
