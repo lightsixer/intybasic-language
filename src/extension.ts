@@ -229,25 +229,13 @@ export function activate(context: vscode.ExtensionContext) {
         
         const runCommand = `& "${JZINTV_EMULATOR_PATH}" ${args.join(' ')}; exit 0`;
         
-        const runTask = new vscode.Task(
-            { type: 'shell', task: 'run' },
-            vscode.TaskScope.Workspace,
-            'Run IntyBasic ROM',
-            'IntyBasic',
-            new vscode.ShellExecution(runCommand)
-        );
-        
-        // Configure task to not show problems on non-zero exit
-        runTask.presentationOptions = {
-            reveal: vscode.TaskRevealKind.Always,
-            panel: vscode.TaskPanelKind.Dedicated,
-            clear: false,
-            showReuseMessage: false
-        };
-        runTask.isBackground = false;
-        runTask.problemMatchers = []; // Don't use problem matchers for the emulator
-        
-        vscode.tasks.executeTask(runTask);
+        // Create or reuse a terminal to run the emulator
+        let terminal = vscode.window.terminals.find(t => t.name === 'IntyBASIC Emulator');
+        if (!terminal) {
+            terminal = vscode.window.createTerminal('IntyBASIC Emulator');
+        }
+        terminal.show();
+        terminal.sendText(runCommand);
     }
 
 	// 1. Build Command: Transpile and Assemble
