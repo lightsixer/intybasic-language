@@ -9,8 +9,10 @@ This extension provides comprehensive language support and integrated build tool
 * **Syntax Highlighting:** Accurate syntax coloration for all IntyBasic keywords, operators, control flow, built-in functions, and data types (including 16-bit variables like `#A` and binary/hex literals).
 * **Integrated Build Chain:** Seamlessly compile your `.bas` files to `.asm` using the **IntyBasic cross-compiler** and assemble them into a runable `.bin` ROM file using **AS1600**.
 * **Emulator Launch:** Directly launch and run your compiled ROM files in the **jzIntv emulator** from within VS Code.
+* **Debug Support:** Build with source maps and symbol files, then launch jzIntv's debugger with your IntyBASIC source code visible alongside the disassembly.
 * **Error Reporting:** Display build errors from the IntyBasic cross-compiler directly in the VS Code **Problems Panel**, linking errors back to the correct line in your source file.
-* **IntelliSense:** Provides code snippets and auto-completion for common IntyBasic keywords.
+* **Clean Command:** Remove all build artifacts (both regular and debug) with a single command.
+* **Cross-Platform:** Works on Windows, macOS, and Linux.
 
 ---
 
@@ -42,30 +44,53 @@ After installing the extension, you must configure the paths to your tools.
 | `intybasic.libraryPath` | Path to the directory containing `intybasic_prologue.asm`, etc. |
 | `intybasic.execRomPath` | Path to the `exec.bin` ROM image (used by `jzintv -e`). |
 | `intybasic.gromRomPath` | Path to the `grom.bin` ROM image (used by `jzintv -g`). |
-| **Optional Flags** | Enable JLP/CC3 memory features and set program title. |
+| `intybasic.intysmapPath` | (Optional) Path to the `intysmap` utility for debug builds. May not be needed with newer AS1600 versions. |
 
 ---
 
 ## ⌨️ Usage
 
-The extension provides two primary commands accessible through the **Command Palette** (`Ctrl+Shift+P` or `Cmd+Shift+P`):
+The extension provides several commands accessible through the **Command Palette** (`Ctrl+Shift+P` or `Cmd+Shift+P`):
+
+### Standard Build & Run Commands
 
 | Command | Description |
 | :--- | :--- |
-| **IntyBasic: Build ROM** | Runs the complete process: `intybasic` (transpile) then `as1600` (assemble), creating the final `.bin` file in your configured output directory. |
-| **IntyBasic: Run ROM in Emulator** | Launches your compiled `.bin` file using the configured `jzintv` emulator. |
-| **IntyBasic: Build and Run** | Combines the two above commands for quick iteration. |
+| **IntyBASIC: Build ROM (Compile & Assemble)** | Compiles your `.bas` file to `.asm`, then assembles to `.bin`. Output goes to `asm/` and `bin/` folders. |
+| **IntyBASIC: Run ROM in Emulator** | Launches your compiled `.bin` file in jzIntv. Prompts to build if ROM is missing or outdated. |
+| **IntyBASIC: Build and Run ROM** | Combines build and run for quick iteration. |
+| **IntyBASIC: Clean Build Artifacts** | Removes all generated files (`.asm`, `.bin`, `.sym`, `.smap`, etc.) from both regular and debug folders. |
+
+### Debug Commands
+
+| Command | Description |
+| :--- | :--- |
+| **IntyBASIC: Debug Build ROM (with source maps)** | Builds with source maps (`.smap`) and symbol files (`.sym`) for debugging. Output goes to `asm-debug/` and `debug/` folders. |
+| **IntyBASIC: Run ROM in Debugger** | Launches jzIntv with debugger mode (`-d`) and source map integration. Shows your BASIC source alongside assembly in the debugger. |
+| **IntyBASIC: Debug Build and Run in Debugger** | Combines debug build and debugger launch. |
 
 ### Build Output
 
-Compiled `.asm` and `.bin` files are placed in the folder specified by the `intybasic.outputDirectory` setting (default is `bin/` relative to your source file).
+* **Regular builds**: Compiled files go to `asm/` (assembly) and `bin/` (ROM) folders relative to your source file.
+* **Debug builds**: Compiled files go to `asm-debug/` (assembly) and `debug/` (ROM + debug symbols) folders.
+
+### Using the Debugger
+
+When you run a debug build and launch the debugger, jzIntv opens in a terminal with its interactive debugger. You can:
+- See your IntyBASIC source code alongside the disassembly
+- Set breakpoints
+- Step through code
+- Inspect memory and registers
+- Use all standard jzIntv debugger commands
+
+Type `?` in the debugger for help on available commands.
 
 ---
 
 ## 🐞 Known Issues
 
-* Error reporting currently relies on the task context to determine the filename, as the $\text{IntyBasic}$ compiler output omits the source filename.
 * Compilation requires the **active file** in the editor to be the `.bas` source file you intend to build.
+* Debug integration with jzIntv is terminal-based; there is no integrated graphical debugger UI within VS Code.
 
 ## 🤝 Contribution
 

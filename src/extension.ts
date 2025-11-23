@@ -47,7 +47,8 @@ const INTYBASIC_LIBRARY_PATH = getConfig('libraryPath');
 const AS1600_ASSEMBLER_PATH = getConfig('assemblerPath');
 const JZINTV_EMULATOR_PATH = getConfig('emulatorPath');
 const JZINTV_EXEC_PATH = getConfig('execRomPath');       
-const JZINTV_GROM_PATH = getConfig('gromRomPath');       
+const JZINTV_GROM_PATH = getConfig('gromRomPath');
+const INTYSMAP_PATH = getConfig('intysmapPath');
 const OUTPUT_DIR = getConfig('outputDirectory') || 'bin'; 
 
 // Update warning message for new required paths (optional, but good practice)
@@ -172,6 +173,118 @@ export function activate(context: vscode.ExtensionContext) {
         }
     }
 
+    // Helper function to build ROM with debug symbols
+    async function buildROMDebug(editor: vscode.TextEditor): Promise<boolean> {
+        const fileBaseName = path.basename(editor.document.fileName, '.bas');
+        const fileDir = path.dirname(editor.document.fileName);
+        const asmDir = path.join(fileDir, 'asm-debug');
+        const outputDir = path.join(fileDir, 'debug');
+        const asmOutputPath = path.join(asmDir, `${fileBaseName}.asm`);
+        const romPath = path.join(outputDir, `${fileBaseName}.bin`);
+        const smapPath = path.join(outputDir, `${fileBaseName}.smap`);
+        const symPath = path.join(outputDir, `${fileBaseName}.sym`);
+
+        // Ensure output directories exist
+        try {
+            await vscode.workspace.fs.createDirectory(vscode.Uri.file(outputDir));
+            await vscode.workspace.fs.createDirectory(vscode.Uri.file(asmDir));
+        } catch (e) {
+            // Directories might already exist
+        }
+
+        const transpileArgs = [
+            `"${editor.document.fileName}"`,
+            `"${asmOutputPath}"`
+        ];
+        if (INTYBASIC_LIBRARY_PATH) {
+            transpileArgs.push(`"${INTYBASIC_LIBRARY_PATH}"`);
+        }
+        
+        const transpileCommand = `"${INTYBASIC_COMPILER_PATH}" ${transpileArgs.join(' ')}`;
+        
+        outputChannel.clear();
+        outputChannel.appendLine('Building IntyBASIC ROM (Debug Mode)...');
+        outputChannel.appendLine(`Command: ${transpileCommand}`);
+        outputChannel.appendLine('');
+        
+        try {
+            const { stdout, stderr } = await execAsync(transpileCommand, { cwd: fileDir });
+            const output = stdout + stderr;
+            
+            outputChannel.appendLine(output);
+            
+            const errors = parseIntyBasicErrors(output, editor.document.uri);
+            if (errors.length > 0) {
+                diagnosticCollection.set(editor.document.uri, errors);
+                outputChannel.show(true);
+                vscode.window.showErrorMessage(`IntyBASIC compilation failed with ${errors.length} error(s). Check the Problems panel.`);
+                return false;
+            }
+            
+            diagnosticCollection.clear();
+            
+            // Assemble with source map and symbol file flags
+            const assembleArgs = [
+                '-o',
+                `"${path.join(outputDir, fileBaseName)}"`,
+                '-j',
+                `"${smapPath}"`,
+                '-s',
+                `"${symPath}"`,
+                `"${asmOutputPath}"`
+            ];
+            const assembleCommand = `"${AS1600_ASSEMBLER_PATH}" ${assembleArgs.join(' ')}`;
+            
+            outputChannel.appendLine('Running assembler (with debug symbols)...');
+            outputChannel.appendLine(`Command: ${assembleCommand}`);
+            outputChannel.appendLine('');
+            
+            const assembleResult = await execAsync(assembleCommand, { cwd: fileDir });
+            outputChannel.appendLine(assembleResult.stdout + assembleResult.stderr);
+            
+            // Process source map with intysmap if available (may be obsolete with newer AS1600)
+            if (INTYSMAP_PATH) {
+                outputChannel.appendLine('Processing source map with intysmap...');
+                const intysmapCommand = `"${INTYSMAP_PATH}" "${smapPath}"`;
+                outputChannel.appendLine(`Command: ${intysmapCommand}`);
+                outputChannel.appendLine('');
+                
+                try {
+                    const intysmapResult = await execAsync(intysmapCommand, { cwd: fileDir });
+                    outputChannel.appendLine(intysmapResult.stdout + intysmapResult.stderr);
+                } catch (error: any) {
+                    outputChannel.appendLine(`Warning: intysmap failed: ${error.message}`);
+                    outputChannel.appendLine('Continuing without intysmap processing (newer AS1600 versions may not need it)...');
+                }
+            } else {
+                outputChannel.appendLine('Note: intysmap not configured (likely not needed with newer AS1600 versions).');
+            }
+            
+            outputChannel.appendLine('');
+            outputChannel.appendLine('Debug build completed successfully!');
+            outputChannel.appendLine(`Source map: ${smapPath}`);
+            outputChannel.appendLine(`Symbol file: ${symPath}`);
+            outputChannel.show(true);
+            
+            return true;
+            
+        } catch (error: any) {
+            const output = (error.stdout || '') + (error.stderr || '');
+            outputChannel.appendLine(output);
+            outputChannel.show(true);
+            
+            const errors = parseIntyBasicErrors(output, editor.document.uri);
+            
+            if (errors.length > 0) {
+                diagnosticCollection.set(editor.document.uri, errors);
+                vscode.window.showErrorMessage(`IntyBASIC debug build failed with ${errors.length} error(s). Check the Problems panel.`);
+            } else {
+                vscode.window.showErrorMessage(`Debug build failed: ${error.message}`);
+            }
+            return false;
+        }
+    }
+
     // Helper function to run ROM
     async function runROM(editor: vscode.TextEditor) {
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
@@ -242,6 +355,96 @@ export function activate(context: vscode.ExtensionContext) {
         terminal.sendText(runCommand);
     }
 
+    // Helper function to run ROM in debugger
+    async function runROMDebug(editor: vscode.TextEditor) {
+        const fileBaseName = path.basename(editor.document.fileName, '.bas');
+        const fileDir = path.dirname(editor.document.fileName);
+        const romPath = path.join(fileDir, 'debug', `${fileBaseName}.bin`);
+        const smapPath = path.join(fileDir, 'debug', `${fileBaseName}.smap`);
+        const symPath = path.join(fileDir, 'debug', `${fileBaseName}.sym`);
+
+        // Check if ROM exists
+        try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(romPath));
+        } catch (error) {
+            const response = await vscode.window.showErrorMessage(
+                'ROM file not found. Build first?',
+                'Debug Build & Run',
+                'Cancel'
+            );
+            
+            if (response === 'Debug Build & Run') {
+                const success = await buildROMDebug(editor);
+                if (!success) {
+                    return;
+                }
+            } else {
+                return;
+            }
+        }
+
+        // Check if debug files exist
+        let hasDebugFiles = false;
+        try {
+            await vscode.workspace.fs.stat(vscode.Uri.file(smapPath));
+            hasDebugFiles = true;
+        } catch (error) {
+            const response = await vscode.window.showWarningMessage(
+                'Debug symbols not found. Run a debug build first?',
+                'Debug Build & Run',
+                'Run Anyway',
+                'Cancel'
+            );
+            
+            if (response === 'Debug Build & Run') {
+                const success = await buildROMDebug(editor);
+                if (!success) {
+                    return;
+                }
+                hasDebugFiles = true;
+            } else if (response === 'Cancel' || !response) {
+                return;
+            }
+        }
+
+        // Build the debugger command
+        const args = ['-d', '-z3'];
+        
+        if (hasDebugFiles) {
+            args.push(`--src-map="${smapPath}"`);
+            
+            // Check if symbol file exists
+            try {
+                await vscode.workspace.fs.stat(vscode.Uri.file(symPath));
+                args.push(`--sym-file="${symPath}"`);
+            } catch (error) {
+                // Symbol file doesn't exist, continue without it
+            }
+        }
+        
+        if (JZINTV_EXEC_PATH) {
+            args.push('-e', `"${JZINTV_EXEC_PATH}"`);
+        }
+        if (JZINTV_GROM_PATH) {
+            args.push('-g', `"${JZINTV_GROM_PATH}"`);
+        }
+        args.push(`"${romPath}"`);
+        
+        // Detect if we're on Windows (PowerShell) or Unix (bash/zsh)
+        const isWindows = process.platform === 'win32';
+        const runCommand = isWindows 
+            ? `& "${JZINTV_EMULATOR_PATH}" ${args.join(' ')}`
+            : `"${JZINTV_EMULATOR_PATH}" ${args.join(' ')}`;
+        
+        // Create or reuse a terminal to run the debugger
+        let terminal = vscode.window.terminals.find(t => t.name === 'IntyBASIC Debugger');
+        if (!terminal) {
+            terminal = vscode.window.createTerminal('IntyBASIC Debugger');
+        }
+        terminal.show();
+        terminal.sendText(runCommand);
+    }
+
 	// 1. Build Command: Transpile and Assemble
     let disposableBuild = vscode.commands.registerCommand('intybasic.build', async () => {
         const editor = vscode.window.activeTextEditor;
@@ -283,14 +486,28 @@ export function activate(context: vscode.ExtensionContext) {
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
         const fileDir = path.dirname(editor.document.fileName);
         
+        // Regular build artifacts
         const asmPath = path.join(fileDir, 'asm', `${fileBaseName}.asm`);
         const binPath = path.join(fileDir, OUTPUT_DIR, `${fileBaseName}.bin`);
         const romPath = path.join(fileDir, OUTPUT_DIR, `${fileBaseName}.rom`);
         const cfgPath = path.join(fileDir, OUTPUT_DIR, `${fileBaseName}.cfg`);
         const lstPath = path.join(fileDir, OUTPUT_DIR, `${fileBaseName}.lst`);
         const symPath = path.join(fileDir, OUTPUT_DIR, `${fileBaseName}.sym`);
+        const smapPath = path.join(fileDir, OUTPUT_DIR, `${fileBaseName}.smap`);
+        
+        // Debug build artifacts
+        const asmDebugPath = path.join(fileDir, 'asm-debug', `${fileBaseName}.asm`);
+        const binDebugPath = path.join(fileDir, 'debug', `${fileBaseName}.bin`);
+        const romDebugPath = path.join(fileDir, 'debug', `${fileBaseName}.rom`);
+        const cfgDebugPath = path.join(fileDir, 'debug', `${fileBaseName}.cfg`);
+        const lstDebugPath = path.join(fileDir, 'debug', `${fileBaseName}.lst`);
+        const symDebugPath = path.join(fileDir, 'debug', `${fileBaseName}.sym`);
+        const smapDebugPath = path.join(fileDir, 'debug', `${fileBaseName}.smap`);
 
-        const filesToDelete = [asmPath, binPath, romPath, cfgPath, lstPath, symPath];
+        const filesToDelete = [
+            asmPath, binPath, romPath, cfgPath, lstPath, symPath, smapPath,
+            asmDebugPath, binDebugPath, romDebugPath, cfgDebugPath, lstDebugPath, symDebugPath, smapDebugPath
+        ];
         let deletedCount = 0;
 
         for (const file of filesToDelete) {
@@ -309,7 +526,40 @@ export function activate(context: vscode.ExtensionContext) {
         }
     });
 
-    context.subscriptions.push(disposableBuild, disposableRun, disposableBuildAndRun, disposableClean);
+    // 5. Debug Build Command
+    let disposableDebugBuild = vscode.commands.registerCommand('intybasic.debugBuild', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) { return; }
+
+        vscode.window.showInformationMessage('Building IntyBASIC ROM (Debug)...');
+        const success = await buildROMDebug(editor);
+        if (success) {
+            vscode.window.showInformationMessage('Debug build successful!');
+        }
+    });
+
+    // 6. Debug Run Command
+    let disposableDebugRun = vscode.commands.registerCommand('intybasic.debugRun', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) { return; }
+        
+        await runROMDebug(editor);
+    });
+
+    // 7. Debug Build and Run Command
+    let disposableDebugBuildAndRun = vscode.commands.registerCommand('intybasic.debugBuildAndRun', async () => {
+        const editor = vscode.window.activeTextEditor;
+        if (!editor) { return; }
+
+        vscode.window.showInformationMessage('Building IntyBASIC ROM (Debug)...');
+        const success = await buildROMDebug(editor);
+        if (success) {
+            vscode.window.showInformationMessage('Debug build successful! Starting debugger...');
+            await runROMDebug(editor);
+        }
+    });
+
+    context.subscriptions.push(disposableBuild, disposableRun, disposableBuildAndRun, disposableClean, disposableDebugBuild, disposableDebugRun, disposableDebugBuildAndRun);
 }
 
 // This method is called when your extension is deactivated

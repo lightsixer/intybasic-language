@@ -2,7 +2,7 @@
   "name": "intybasic-language",
   "displayName": "IntyBASIC Language",
   "description": "Language support for IntyBASIC.",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "engines": {
     "vscode": "^1.106.1"
   },
@@ -44,6 +44,11 @@
           "type": "string",
           "default": "",
           "description": "Absolute path to the 'grom.bin' ROM image.  Used by jzintv with the -g switch."
+        },
+        "intybasic.intysmapPath": {
+          "type": "string",
+          "default": "",
+          "description": "Absolute path to the 'intysmap' utility (ships with IntyBASIC). Note: May be obsolete with newer AS1600 versions. Leave empty to skip."
         }
       }
     },
@@ -74,6 +79,18 @@
       {
         "command": "intybasic.clean",
         "title": "IntyBASIC: Clean Build Artifacts"
+      },
+      {
+        "command": "intybasic.debugBuild",
+        "title": "IntyBASIC: Debug Build ROM (with source maps)"
+      },
+      {
+        "command": "intybasic.debugRun",
+        "title": "IntyBASIC: Run ROM in Debugger"
+      },
+      {
+        "command": "intybasic.debugBuildAndRun",
+        "title": "IntyBASIC: Debug Build and Run in Debugger"
       }
     ],
     "problemMatchers": [
