@@ -9,7 +9,12 @@ import {
     CompletionItemKind,
     TextDocumentPositionParams,
     Hover,
-    MarkupKind
+    MarkupKind,
+    SignatureHelp,
+    SignatureInformation,
+    ParameterInformation,
+    Diagnostic,
+    DiagnosticSeverity
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -40,7 +45,10 @@ connection.onInitialize((params: InitializeParams) => {
                 resolveProvider: true,
                 triggerCharacters: ['.', ' ']
             },
-            hoverProvider: true
+            hoverProvider: true,
+            signatureHelpProvider: {
+                triggerCharacters: ['(', ',', ' ']
+            }
         }
     };
 
@@ -145,19 +153,139 @@ const KEYWORDS = [
 ];
 
 const FUNCTIONS = [
-    { name: 'ABS', signature: 'ABS(value)', description: 'Returns the absolute value of a number.' },
-    { name: 'SGN', signature: 'SGN(value)', description: 'Returns the sign of a number: -1 for negative, 0 for zero, 1 for positive.' },
-    { name: 'RAND', signature: 'RAND(max)', description: 'Returns a random number between 0 and max-1.' },
-    { name: 'RANDOM', signature: 'RANDOM(seed)', description: 'Seeds the random number generator with the given value.' },
-    { name: 'SQR', signature: 'SQR(value)', description: 'Returns the square root of a number.' },
-    { name: 'LEN', signature: 'LEN(string)', description: 'Returns the length of a string.' },
-    { name: 'POS', signature: 'POS(string1, string2)', description: 'Returns the position of string2 within string1, or 0 if not found.' },
-    { name: 'PEEK', signature: 'PEEK(address)', description: 'Reads a value from a memory address.' },
-    { name: 'USR', signature: 'USR(address, args...)', description: 'Calls an assembly language routine at the specified address.' },
-    { name: 'FRAME', signature: 'FRAME', description: 'Returns the current frame number (increments at 60Hz).' },
-    { name: 'NTSC', signature: 'NTSC', description: 'Returns 1 if running on NTSC system, 0 if PAL.' },
-    { name: '#MOBSHADOW', signature: '#MOBSHADOW', description: 'Returns the address of the MOB shadow table.' },
-    { name: '#BACKTAB', signature: '#BACKTAB', description: 'Returns the address of the BACKTAB (screen memory).' }
+    { 
+        name: 'ABS', 
+        signature: 'ABS(value)', 
+        description: 'Returns the absolute value of a number.',
+        parameters: [{ label: 'value', documentation: 'The number to get absolute value of' }]
+    },
+    { 
+        name: 'SGN', 
+        signature: 'SGN(value)', 
+        description: 'Returns the sign of a number: -1 for negative, 0 for zero, 1 for positive.',
+        parameters: [{ label: 'value', documentation: 'The number to get sign of' }]
+    },
+    { 
+        name: 'RAND', 
+        signature: 'RAND(max)', 
+        description: 'Returns a random number between 0 and max-1.',
+        parameters: [{ label: 'max', documentation: 'Upper bound (exclusive) for random number' }]
+    },
+    { 
+        name: 'RANDOM', 
+        signature: 'RANDOM(seed)', 
+        description: 'Seeds the random number generator with the given value.',
+        parameters: [{ label: 'seed', documentation: 'Seed value for random number generator' }]
+    },
+    { 
+        name: 'SQR', 
+        signature: 'SQR(value)', 
+        description: 'Returns the square root of a number.',
+        parameters: [{ label: 'value', documentation: 'The number to get square root of' }]
+    },
+    { 
+        name: 'LEN', 
+        signature: 'LEN(string)', 
+        description: 'Returns the length of a string.',
+        parameters: [{ label: 'string', documentation: 'The string to measure' }]
+    },
+    { 
+        name: 'POS', 
+        signature: 'POS(string1, string2)', 
+        description: 'Returns the position of string2 within string1, or 0 if not found.',
+        parameters: [
+            { label: 'string1', documentation: 'The string to search in' },
+            { label: 'string2', documentation: 'The string to search for' }
+        ]
+    },
+    { 
+        name: 'PEEK', 
+        signature: 'PEEK(address)', 
+        description: 'Reads a value from a memory address.',
+        parameters: [{ label: 'address', documentation: 'Memory address to read from' }]
+    },
+    { 
+        name: 'POKE', 
+        signature: 'POKE address, value', 
+        description: 'Writes a value to a memory address.',
+        parameters: [
+            { label: 'address', documentation: 'Memory address to write to' },
+            { label: 'value', documentation: 'Value to write' }
+        ]
+    },
+    { 
+        name: 'USR', 
+        signature: 'USR(address, args...)', 
+        description: 'Calls an assembly language routine at the specified address.',
+        parameters: [
+            { label: 'address', documentation: 'Address of assembly routine' },
+            { label: 'args', documentation: 'Optional arguments to pass' }
+        ]
+    },
+    { 
+        name: 'PRINT', 
+        signature: 'PRINT [AT position,] expression', 
+        description: 'Display text or graphics on screen.',
+        parameters: [
+            { label: 'position', documentation: 'Optional screen position (0-239)' },
+            { label: 'expression', documentation: 'Text or value to display' }
+        ]
+    },
+    { 
+        name: 'SPRITE', 
+        signature: 'SPRITE n, x, y, card', 
+        description: 'Position and display a sprite (MOB).',
+        parameters: [
+            { label: 'n', documentation: 'Sprite number (0-7)' },
+            { label: 'x', documentation: 'X coordinate' },
+            { label: 'y', documentation: 'Y coordinate' },
+            { label: 'card', documentation: 'Card/graphic number' }
+        ]
+    },
+    { 
+        name: 'SOUND', 
+        signature: 'SOUND channel, frequency, volume', 
+        description: 'Play a sound on a PSG channel.',
+        parameters: [
+            { label: 'channel', documentation: 'Sound channel (0-2 for tones, 3 for noise)' },
+            { label: 'frequency', documentation: 'Frequency value' },
+            { label: 'volume', documentation: 'Volume (0-15)' }
+        ]
+    },
+    { 
+        name: 'DEFINE', 
+        signature: 'DEFINE name, count, bitmap...', 
+        description: 'Define graphics cards/bitmaps.',
+        parameters: [
+            { label: 'name', documentation: 'Label for the graphics definition' },
+            { label: 'count', documentation: 'Number of cards to define' },
+            { label: 'bitmap', documentation: 'Bitmap data' }
+        ]
+    },
+    { 
+        name: 'FRAME', 
+        signature: 'FRAME', 
+        description: 'Returns the current frame number (increments at 60Hz).',
+        parameters: []
+    },
+    { 
+        name: 'NTSC', 
+        signature: 'NTSC', 
+        description: 'Returns 1 if running on NTSC system, 0 if PAL.',
+        parameters: []
+    },
+    { 
+        name: '#MOBSHADOW', 
+        signature: '#MOBSHADOW', 
+        description: 'Returns the address of the MOB shadow table.',
+        parameters: []
+    },
+    { 
+        name: '#BACKTAB', 
+        signature: '#BACKTAB', 
+        description: 'Returns the address of the BACKTAB (screen memory).',
+        parameters: []
+    }
 ];
 
 const VARIABLES = [
@@ -301,6 +429,216 @@ connection.onHover(
         return undefined;
     }
 );
+
+// Signature help provider
+connection.onSignatureHelp(
+    (params: TextDocumentPositionParams): SignatureHelp | undefined => {
+        const document = documents.get(params.textDocument.uri);
+        if (!document) {
+            return undefined;
+        }
+
+        const text = document.getText();
+        const offset = document.offsetAt(params.position);
+        
+        // Find the function call we're in by looking backwards for an opening parenthesis
+        // or command name without parenthesis (like PRINT AT, SPRITE, etc.)
+        let start = offset - 1;
+        let parenCount = 0;
+        let foundOpenParen = false;
+        
+        // Look backwards to find the function/command start
+        while (start >= 0) {
+            const char = text[start];
+            
+            if (char === ')') {
+                parenCount++;
+            } else if (char === '(') {
+                if (parenCount === 0) {
+                    foundOpenParen = true;
+                    break;
+                }
+                parenCount--;
+            } else if (parenCount === 0 && /[\n\r:]/.test(char)) {
+                // Hit a new line or statement separator
+                break;
+            }
+            
+            start--;
+        }
+        
+        // Extract the function/command name
+        let functionStart = start;
+        if (foundOpenParen) {
+            functionStart = start - 1;
+        }
+        
+        // Skip whitespace before function name
+        while (functionStart >= 0 && /\s/.test(text[functionStart])) {
+            functionStart--;
+        }
+        
+        // Find the start of the word
+        let wordStart = functionStart;
+        while (wordStart >= 0 && /[A-Za-z0-9_#]/.test(text[wordStart])) {
+            wordStart--;
+        }
+        wordStart++;
+        
+        const functionName = text.substring(wordStart, functionStart + 1).toUpperCase();
+        
+        // Find matching function
+        const func = FUNCTIONS.find(f => f.name === functionName);
+        if (!func) {
+            return undefined;
+        }
+        
+        // Count which parameter we're on by counting commas
+        let paramIndex = 0;
+        let searchPos = foundOpenParen ? start + 1 : wordStart + functionName.length;
+        let depth = 0;
+        
+        for (let i = searchPos; i < offset; i++) {
+            const char = text[i];
+            if (char === '(') {
+                depth++;
+            } else if (char === ')') {
+                depth--;
+            } else if (char === ',' && depth === 0) {
+                paramIndex++;
+            }
+        }
+        
+        // Build parameter information
+        const parameterInfos: ParameterInformation[] = func.parameters.map(p => ({
+            label: p.label,
+            documentation: p.documentation
+        }));
+        
+        const signatureInfo: SignatureInformation = {
+            label: func.signature,
+            documentation: {
+                kind: MarkupKind.Markdown,
+                value: func.description
+            },
+            parameters: parameterInfos
+        };
+        
+        return {
+            signatures: [signatureInfo],
+            activeSignature: 0,
+            activeParameter: Math.min(paramIndex, func.parameters.length - 1)
+        };
+    }
+);
+
+// Document change handler for diagnostics
+documents.onDidChangeContent(change => {
+    validateDocument(change.document);
+});
+
+// Document opened handler
+documents.onDidOpen(event => {
+    validateDocument(event.document);
+});
+
+function validateDocument(document: TextDocument): void {
+    const diagnostics: Diagnostic[] = [];
+    const text = document.getText();
+    
+    // Count variable usage
+    const dimPattern = /\bDIM\s+(#?)([A-Za-z_][A-Za-z0-9_]*(?:\s*\(\s*\d+\s*\))?(?:\s*,\s*(#?)([A-Za-z_][A-Za-z0-9_]*(?:\s*\(\s*\d+\s*\))?))*)/gi;
+    
+    let bit8Count = 0;
+    let bit16Count = 0;
+    const lines: { line: number, var8: number, var16: number }[] = [];
+    
+    let match;
+    while ((match = dimPattern.exec(text)) !== null) {
+        const lineNumber = document.positionAt(match.index).line;
+        const dimStatement = match[0];
+        
+        // Parse the DIM statement for all variables
+        const varPattern = /(#?)([A-Za-z_][A-Za-z0-9_]*(?:\s*\(\s*\d+\s*\))?)/g;
+        let varMatch;
+        let lineBit8 = 0;
+        let lineBit16 = 0;
+        
+        while ((varMatch = varPattern.exec(dimStatement)) !== null) {
+            if (varMatch[1] === '' && varMatch[0] !== 'DIM') {
+                // 8-bit variable
+                const arrayMatch = /\((\d+)\)/.exec(varMatch[2]);
+                if (arrayMatch) {
+                    lineBit8 += parseInt(arrayMatch[1]);
+                } else {
+                    lineBit8++;
+                }
+            } else if (varMatch[1] === '#') {
+                // 16-bit variable
+                const arrayMatch = /\((\d+)\)/.exec(varMatch[2]);
+                if (arrayMatch) {
+                    lineBit16 += parseInt(arrayMatch[1]);
+                } else {
+                    lineBit16++;
+                }
+            }
+        }
+        
+        bit8Count += lineBit8;
+        bit16Count += lineBit16;
+        lines.push({ line: lineNumber, var8: lineBit8, var16: lineBit16 });
+    }
+    
+    // Check limits
+    const MAX_8BIT = 228;
+    const MAX_16BIT = 110;
+    
+    if (bit8Count > MAX_8BIT) {
+        diagnostics.push({
+            severity: DiagnosticSeverity.Error,
+            range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 1 }
+            },
+            message: `Too many 8-bit variables: ${bit8Count}/${MAX_8BIT}. Reduce variable count.`,
+            source: 'IntyBASIC'
+        });
+    } else if (bit8Count > MAX_8BIT * 0.8) {
+        diagnostics.push({
+            severity: DiagnosticSeverity.Warning,
+            range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 1 }
+            },
+            message: `Approaching 8-bit variable limit: ${bit8Count}/${MAX_8BIT} (${Math.round(bit8Count/MAX_8BIT*100)}%)`,
+            source: 'IntyBASIC'
+        });
+    }
+    
+    if (bit16Count > MAX_16BIT) {
+        diagnostics.push({
+            severity: DiagnosticSeverity.Error,
+            range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 1 }
+            },
+            message: `Too many 16-bit variables: ${bit16Count}/${MAX_16BIT}. Reduce variable count.`,
+            source: 'IntyBASIC'
+        });
+    } else if (bit16Count > MAX_16BIT * 0.8) {
+        diagnostics.push({
+            severity: DiagnosticSeverity.Warning,
+            range: {
+                start: { line: 0, character: 0 },
+                end: { line: 0, character: 1 }
+            },
+            message: `Approaching 16-bit variable limit: ${bit16Count}/${MAX_16BIT} (${Math.round(bit16Count/MAX_16BIT*100)}%)`,
+            source: 'IntyBASIC'
+        });
+    }
+    
+    connection.sendDiagnostics({ uri: document.uri, diagnostics });
+}
 
 // Make the text document manager listen on the connection
 documents.listen(connection);
