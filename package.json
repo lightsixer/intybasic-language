@@ -2,7 +2,7 @@
   "name": "intybasic-language",
   "displayName": "IntyBASIC Language",
   "description": "Language support for IntyBASIC.",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "engines": {
     "vscode": "^1.106.1"
   },

@@ -7,6 +7,13 @@ This extension provides comprehensive language support and integrated build tool
 ## ✨ Features
 
 * **Syntax Highlighting:** Accurate syntax coloration for all IntyBasic keywords, operators, control flow, built-in functions, and data types (including 16-bit variables like `#A` and binary/hex literals).
+* **IntelliSense & Code Completion:** Full language server support with:
+  * Code completion for all 70+ IntyBASIC keywords, functions, and intrinsic variables
+  * Hover tooltips with comprehensive documentation and examples
+  * Signature help showing function parameters as you type
+  * Go to Definition (F12) for variables, constants, procedures, and labels
+  * Find All References (Shift+F12) to locate symbol usage throughout your code
+  * Variable limits linter warns when approaching memory limits (228 8-bit / 110 16-bit variables)
 * **Integrated Build Chain:** Seamlessly compile your `.bas` files to `.asm` using the **IntyBasic cross-compiler** and assemble them into a runable `.bin` ROM file using **AS1600**.
 * **Emulator Launch:** Directly launch and run your compiled ROM files in the **jzIntv emulator** from within VS Code.
 * **Debug Support:** Build with source maps and symbol files, then launch jzIntv's debugger with your IntyBASIC source code visible alongside the disassembly.
@@ -104,6 +111,50 @@ When you run a debug build and launch the debugger, jzIntv opens in a terminal w
 Press `ENTER` alone to repeat the last step/trace command.
 
 Type `?` in the debugger for help on available commands.
+
+---
+
+## 💡 IntelliSense Features
+
+The extension includes a full-featured language server that provides intelligent code assistance:
+
+### Code Completion
+
+As you type, the extension suggests:
+- **Keywords**: All IntyBASIC control flow, graphics, sound, and system keywords
+- **Functions**: Built-in functions like `ABS()`, `RAND()`, `PEEK()`, `SPRITE()`, etc.
+- **Variables**: Intrinsic variables like `CONT`, `COL0-7`, `MUSIC.PLAYING`, `VOICE.AVAILABLE`
+
+### Hover Documentation
+
+Hover over any keyword, function, or variable to see:
+- Detailed description of what it does
+- Usage examples
+- Parameter information
+- Syntax patterns
+
+### Signature Help
+
+When typing function calls, see real-time parameter hints:
+- Which parameter you're currently editing
+- Documentation for each parameter
+- Full function signature
+
+Example: Type `SPRITE(` and see hints for `n, x, y, card` parameters.
+
+### Navigation
+
+- **Go to Definition (F12)**: Jump to where a variable, constant, procedure, or label is declared
+- **Find All References (Shift+F12)**: See all places where a symbol is used
+- **Peek Definition (Alt+F12)**: View definition inline without leaving your current location
+
+### Variable Limits Linter
+
+The extension tracks your variable usage and warns you when approaching IntyBASIC's memory limits:
+- **8-bit variables**: 228 maximum (warning at 80%)
+- **16-bit variables**: 110 maximum (warning at 80%)
+- Counts both single variables and arrays from `DIM` statements
+- Real-time diagnostics as you type
 
 ---
 
