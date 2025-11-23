@@ -4,8 +4,16 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import { exec } from 'child_process';
 import { promisify } from 'util';
+import {
+    LanguageClient,
+    LanguageClientOptions,
+    ServerOptions,
+    TransportKind
+} from 'vscode-languageclient/node';
 
 const execAsync = promisify(exec);
+
+let client: LanguageClient;
 
 // Helper function to parse IntyBASIC error output
 function parseIntyBasicErrors(output: string, fileUri: vscode.Uri): vscode.Diagnostic[] {
@@ -67,6 +75,36 @@ if (!INTYBASIC_COMPILER_PATH || !INTYBASIC_LIBRARY_PATH ||!AS1600_ASSEMBLER_PATH
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+
+    // Start the language server
+    const serverModule = context.asAbsolutePath(
+        path.join('out', 'server', 'intybasicServer.js')
+    );
+
+    const serverOptions: ServerOptions = {
+        run: { module: serverModule, transport: TransportKind.ipc },
+        debug: {
+            module: serverModule,
+            transport: TransportKind.ipc,
+            options: { execArgv: ['--nolazy', '--inspect=6009'] }
+        }
+    };
+
+    const clientOptions: LanguageClientOptions = {
+        documentSelector: [{ scheme: 'file', language: 'intybasic' }],
+        synchronize: {
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/*.bas')
+        }
+    };
+
+    client = new LanguageClient(
+        'intybasicLanguageServer',
+        'IntyBASIC Language Server',
+        serverOptions,
+        clientOptions
+    );
+
+    client.start();
 
     // Create a diagnostic collection for IntyBASIC errors
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('intybasic');
@@ -586,4 +624,10 @@ export function activate(context: vscode.ExtensionContext) {
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+// This method is called when your extension is deactivated
+export function deactivate(): Thenable<void> | undefined {
+    if (!client) {
+        return undefined;
+    }
+    return client.stop();
+}

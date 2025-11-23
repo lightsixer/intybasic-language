@@ -41,7 +41,9 @@ const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
 const child_process_1 = require("child_process");
 const util_1 = require("util");
+const node_1 = require("vscode-languageclient/node");
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
+let client;
 // Helper function to parse IntyBASIC error output
 function parseIntyBasicErrors(output, fileUri) {
     const diagnostics = [];
@@ -85,6 +87,24 @@ if (!INTYBASIC_COMPILER_PATH || !INTYBASIC_LIBRARY_PATH || !AS1600_ASSEMBLER_PAT
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 function activate(context) {
+    // Start the language server
+    const serverModule = context.asAbsolutePath(path.join('out', 'server', 'intybasicServer.js'));
+    const serverOptions = {
+        run: { module: serverModule, transport: node_1.TransportKind.ipc },
+        debug: {
+            module: serverModule,
+            transport: node_1.TransportKind.ipc,
+            options: { execArgv: ['--nolazy', '--inspect=6009'] }
+        }
+    };
+    const clientOptions = {
+        documentSelector: [{ scheme: 'file', language: 'intybasic' }],
+        synchronize: {
+            fileEvents: vscode.workspace.createFileSystemWatcher('**/*.bas')
+        }
+    };
+    client = new node_1.LanguageClient('intybasicLanguageServer', 'IntyBASIC Language Server', serverOptions, clientOptions);
+    client.start();
     // Create a diagnostic collection for IntyBASIC errors
     const diagnosticCollection = vscode.languages.createDiagnosticCollection('intybasic');
     context.subscriptions.push(diagnosticCollection);
@@ -537,5 +557,11 @@ function activate(context) {
     context.subscriptions.push(disposableBuild, disposableRun, disposableBuildAndRun, disposableClean, disposableDebugBuild, disposableDebugRun, disposableDebugBuildAndRun);
 }
 // This method is called when your extension is deactivated
-function deactivate() { }
+// This method is called when your extension is deactivated
+function deactivate() {
+    if (!client) {
+        return undefined;
+    }
+    return client.stop();
+}
 //# sourceMappingURL=extension.js.map

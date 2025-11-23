@@ -62,17 +62,26 @@
         }
       }
     },
-    "languages": [{
-      "id": "intybasic",
-      "aliases": ["IntyBASIC", "intybasic"],
-      "extensions": [".bas"],
-      "configuration": "./language-configuration.json"
-    }],
-    "grammars": [{
-      "language": "intybasic",
-      "scopeName": "source.intybasic",
-      "path": "./syntaxes/intybasic.tmLanguage.json"
-    }],
+    "languages": [
+      {
+        "id": "intybasic",
+        "aliases": [
+          "IntyBASIC",
+          "intybasic"
+        ],
+        "extensions": [
+          ".bas"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "intybasic",
+        "scopeName": "source.intybasic",
+        "path": "./syntaxes/intybasic.tmLanguage.json"
+      }
+    ],
     "commands": [
       {
         "command": "intybasic.build",
@@ -104,18 +113,18 @@
       }
     ],
     "problemMatchers": [
-        {
-            "name": "intybasic-errors",
-            "owner": "intybasic",
-            "source": "IntyBASIC",
-            "applyTo": "allDocuments",
-            "fileLocation": "absolute",
-            "pattern": {
-                "regexp": "^Error:\\s+(.*)\\s+in\\s+line\\s+(\\d+)$",
-                "message": 1,
-                "line": 2
-            }
+      {
+        "name": "intybasic-errors",
+        "owner": "intybasic",
+        "source": "IntyBASIC",
+        "applyTo": "allDocuments",
+        "fileLocation": "absolute",
+        "pattern": {
+          "regexp": "^Error:\\s+(.*)\\s+in\\s+line\\s+(\\d+)$",
+          "message": 1,
+          "line": 2
         }
+      }
     ]
   },
   "scripts": {
@@ -127,13 +136,18 @@
     "test": "vscode-test"
   },
   "devDependencies": {
-    "@types/vscode": "^1.106.1",
     "@types/mocha": "^10.0.10",
     "@types/node": "22.x",
-    "typescript-eslint": "^8.46.3",
+    "@types/vscode": "^1.106.1",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3",
-    "@vscode/test-cli": "^0.0.12",
-    "@vscode/test-electron": "^2.5.2"
+    "typescript-eslint": "^8.46.3",
+    "vscode-languageclient": "^9.0.1"
+  },
+  "dependencies": {
+    "vscode-languageserver": "^9.0.1",
+    "vscode-languageserver-textdocument": "^1.0.12"
   }
 }
