@@ -83,15 +83,31 @@
 				},
 				{
 					"name": "keyword.control.intybasic",
-					"match": "\\b(?i:if|then|elseif|else|return|for|to|step|next|while|wend|do|until|loop|exit|on|procedure|end)\\b"
+					"match": "\\b(?i:END\\s+SELECT)\\b"
+				},
+				{
+					"name": "keyword.control.intybasic",
+					"match": "\\b(?i:EXIT\\s+SELECT)\\b"
+				},
+				{
+					"name": "keyword.control.intybasic",
+					"match": "\\b(?i:CASE\\s+ELSE)\\b"
+				},
+				{
+					"name": "keyword.control.intybasic",
+					"match": "\\b(?i:CASE\\s+\\d+\\s+TO\\s+\\d+)\\b"
+				},
+				{
+					"name": "keyword.control.intybasic",
+					"match": "\\b(?i:if|then|elseif|else|return|for|to|step|next|while|wend|do|until|loop|exit|on|procedure|end|select|case)\\b"
 				},
 				{
 					"name": "keyword.other.intybasic",
-					"match": "\\b(?i:restore|read|write|erase|flash|data|packed|varptr|define|alternate|sprite|border|mode|screen|bitmap|def fn|include|print|at|color|cls|scroll|wait|sound|scroll|play|volume|simple|full|none|drums|no|voice|init|number|poke|peek|option|warnings|explicit|on|off|stack_check|call|asm)\\b"
+					"match": "\\b(?i:restore|read|write|erase|flash|data|packed|varptr|define|alternate|sprite|border|mode|screen|bitmap|def fn|include|print|at|color|cls|scroll|wait|sound|play|music|volume|simple|full|none|drums|no|voice|init|number|poke|peek|option|warnings|explicit|map|segment|bank|enable|disable|normal|inverse|mirror_x|repeat|stop|jump|speed|off|mix|type|noise|vol|value|fast|stack_check|call|asm)\\b"
 				},
 				{
 					"name": "support.function.intybasic",
-					"match": "\\b(?i:ABS|SGN|CONT|CONT1|CONT2|CONT3|CONT4|COL0|COL1|COL2|COL3|COL4|COL5|COL6|COL7|RAND|RANDOM|LEN|POS|FRAME|NTSC|FLASH_FIRST|FLASH_LAST)\\b|#(?i:backtab|mobshadow)"
+					"match": "\\b(?i:ABS|SGN|USR|CONT|CONT1|CONT2|CONT3|CONT4|COL0|COL1|COL2|COL3|COL4|COL5|COL6|COL7|RAND|RANDOM|LEN|POS|FRAME|NTSC)\\b|#(?i:backtab|mobshadow)"
 				},
 				{
 					"name": "support.variable.intybasic",
@@ -106,12 +122,24 @@
 					"match": "\\b(?i:VOICE)\\.(?i:AVAILABLE|PLAYING)\\b"
 				},
 				{
+					"name": "support.variable.intybasic",
+					"match": "\\b(?i:ECS)\\.(?i:AVAILABLE)\\b"
+				},
+				{
+					"name": "support.variable.intybasic",
+					"match": "\\b(?i:FLASH)\\.(?i:FIRST|LAST)\\b"
+				},
+				{
 					"name": "storage.type.intybasic",
 					"match": "\\b(?i:dim|signed|unsigned|const)\\b"
 				},
 				{
 					"name": "keyword.operator.logical.intybasic",
 					"match": "\\b(?i:and|or|xor|not)\\b"
+				},
+				{
+					"name": "keyword.operator.fixed.intybasic",
+					"match": "(\\+\\.|\\-\\.)"
 				},
 				{
 					"name": "keyword.operator.comparison.intybasic",
@@ -142,15 +170,15 @@
 			"patterns": [
 				{
 					"name": "constant.numeric.hex.intybasic",
-					"match": "\\b[\\+\\-]?[\\$][0-9a-fA-F]+\\b"
+					"match": "\\b[\\+\\-]?[\\$][0-9a-fA-F]+[Uu]?\\b"
 				},
 				{
 					"name": "constant.numeric.bin.intybasic",
-					"match": "\\b[\\+\\-]?[\\&][01]+\\b"
+					"match": "\\b[\\+\\-]?[\\&][01]+[Uu]?\\b"
 				},
 				{
 					"name": "constant.numeric.dec.intybasic",
-					"match": "\\b[\\+\\-]?[0-9]+\\b"
+					"match": "\\b[\\+\\-]?[0-9]+[Uu]?\\b"
 				}
 			]
 		},
