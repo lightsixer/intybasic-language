@@ -39,11 +39,27 @@ exports.deactivate = deactivate;
 // Import the module and reference it with the alias vscode in your code below
 const vscode = __importStar(require("vscode"));
 const path = __importStar(require("path"));
+const fs = __importStar(require("fs"));
 const child_process_1 = require("child_process");
 const util_1 = require("util");
 const node_1 = require("vscode-languageclient/node");
 const execAsync = (0, util_1.promisify)(child_process_1.exec);
 let client;
+function getToolchainConfig() {
+    const config = vscode.workspace.getConfiguration('intybasic');
+    const mode = config.get('toolchainMode') || 'standalone';
+    const sdkPath = config.get('sdkPath');
+    return { mode, sdkPath };
+}
+// Detect if a file is within an SDK project structure
+function detectSdkProject(filePath) {
+    const sdkFolders = ['Projects', 'Examples', 'Contributions'];
+    return sdkFolders.some(folder => filePath.includes(path.sep + folder + path.sep));
+}
+// Get project name from file path
+function getProjectName(filePath) {
+    return path.basename(filePath, '.bas');
+}
 // Helper function to parse IntyBASIC error output
 function parseIntyBasicErrors(output, fileUri) {
     const diagnostics = [];
@@ -65,28 +81,54 @@ function getConfig(key) {
     const config = vscode.workspace.getConfiguration('intybasic');
     return config.get(key);
 }
-// GLobal paths retrieved from settings
-const INTYBASIC_COMPILER_PATH = getConfig('compilerPath');
-const INTYBASIC_LIBRARY_PATH = getConfig('libraryPath');
-const AS1600_ASSEMBLER_PATH = getConfig('assemblerPath');
-const JZINTV_EMULATOR_PATH = getConfig('emulatorPath');
-const JZINTV_EXEC_PATH = getConfig('execRomPath');
-const JZINTV_GROM_PATH = getConfig('gromRomPath');
-const INTYSMAP_PATH = getConfig('intysmapPath');
-const OUTPUT_DIR = getConfig('outputDirectory') || 'bin';
 function getConfigBoolean(key) {
     const config = vscode.workspace.getConfiguration('intybasic');
     return config.get(key) || false;
 }
+// Global configuration - will be initialized based on mode
 const ENABLE_INTELLIVOICE = getConfigBoolean('enableIntellivoice');
 const ENABLE_JLP_SAVEGAME = getConfigBoolean('enableJlpSavegame');
-// Update warning message for new required paths (optional, but good practice)
-if (!INTYBASIC_COMPILER_PATH || !INTYBASIC_LIBRARY_PATH || !AS1600_ASSEMBLER_PATH || !JZINTV_EMULATOR_PATH || !JZINTV_EXEC_PATH || !JZINTV_GROM_PATH) {
-    vscode.window.showWarningMessage('Some IntyBasic tool or ROM paths are not configured. Please check your extension settings.');
+// Standalone mode paths (only used when mode is 'standalone')
+let INTYBASIC_COMPILER_PATH;
+let INTYBASIC_LIBRARY_PATH;
+let AS1600_ASSEMBLER_PATH;
+let JZINTV_EMULATOR_PATH;
+let JZINTV_EXEC_PATH;
+let JZINTV_GROM_PATH;
+let INTYSMAP_PATH;
+let OUTPUT_DIR;
+// Initialize configuration based on mode
+function initializeConfiguration() {
+    const toolchainConfig = getToolchainConfig();
+    if (toolchainConfig.mode === 'standalone') {
+        INTYBASIC_COMPILER_PATH = getConfig('compilerPath');
+        INTYBASIC_LIBRARY_PATH = getConfig('libraryPath');
+        AS1600_ASSEMBLER_PATH = getConfig('assemblerPath');
+        JZINTV_EMULATOR_PATH = getConfig('emulatorPath');
+        JZINTV_EXEC_PATH = getConfig('execRomPath');
+        JZINTV_GROM_PATH = getConfig('gromRomPath');
+        INTYSMAP_PATH = getConfig('intysmapPath');
+        OUTPUT_DIR = getConfig('outputDirectory') || 'bin';
+        // Validate standalone configuration
+        if (!INTYBASIC_COMPILER_PATH || !AS1600_ASSEMBLER_PATH || !JZINTV_EMULATOR_PATH || !JZINTV_EXEC_PATH || !JZINTV_GROM_PATH) {
+            vscode.window.showWarningMessage('Some IntyBASIC tool or ROM paths are not configured. Please check your extension settings.');
+        }
+    }
+    else if (toolchainConfig.mode === 'sdk') {
+        // Validate SDK configuration
+        if (!toolchainConfig.sdkPath) {
+            vscode.window.showErrorMessage('IntyBASIC SDK mode is enabled but SDK path is not configured. Please set intybasic.sdkPath in settings.');
+        }
+        else if (!fs.existsSync(toolchainConfig.sdkPath)) {
+            vscode.window.showErrorMessage(`IntyBASIC SDK path does not exist: ${toolchainConfig.sdkPath}`);
+        }
+    }
 }
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
 function activate(context) {
+    // Initialize configuration based on toolchain mode
+    initializeConfiguration();
     // Start the language server
     const serverModule = context.asAbsolutePath(path.join('out', 'server', 'intybasicServer.js'));
     const serverOptions = {
