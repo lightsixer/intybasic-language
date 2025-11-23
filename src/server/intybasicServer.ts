@@ -63,23 +63,85 @@ connection.onInitialized(() => {
     }
 });
 
-// IntyBASIC keyword database
+// IntyBASIC keyword database with documentation
 const KEYWORDS = [
-    'REM', 'DIM', 'DEF', 'FN', 'DATA', 'READ', 'RESTORE',
-    'IF', 'THEN', 'ELSE', 'ELSEIF', 'END', 'SELECT', 'CASE', 'EXIT',
-    'FOR', 'TO', 'STEP', 'NEXT', 'WHILE', 'WEND', 'DO', 'LOOP', 'UNTIL', 'REPEAT',
-    'GOTO', 'GOSUB', 'RETURN', 'ON', 'FRAME',
-    'PROCEDURE', 'SUB',
-    'PRINT', 'AT', 'INPUT',
-    'POKE', 'PEEK', 'USR',
-    'WAIT', 'CLS', 'SCREEN', 'DEFINE', 'MODE',
-    'SPRITE', 'BITMAP', 'NORMAL', 'INVERSE', 'MIRROR_X',
-    'SOUND', 'MUSIC', 'PLAY', 'SIMPLE', 'REPEAT', 'STOP', 'JUMP', 'SPEED', 'OFF', 'MIX', 'TYPE', 'NOISE', 'VOL', 'VALUE', 'FAST',
-    'VOICE', 'ENABLE', 'DISABLE',
-    'INCLUDE', 'ASM', 'CALL', 'STACK_CHECK',
-    'CONST', 'VARPTR',
-    'SEGMENT', 'BANK', 'MAP',
-    'AND', 'OR', 'XOR', 'NOT'
+    { name: 'REM', description: 'Comment. Everything after REM on the line is ignored.' },
+    { name: 'DIM', description: 'Declare variables. `DIM x` for 8-bit, `DIM #x` for 16-bit. Example: `DIM score, #pointer`' },
+    { name: 'DEF', description: 'Define a function. Use with FN. Example: `DEF FN double(x) = x * 2`' },
+    { name: 'FN', description: 'Call a user-defined function. Example: `y = FN double(5)`' },
+    { name: 'DATA', description: 'Define data to be read by READ statements. Example: `DATA 1, 2, 3, 4`' },
+    { name: 'READ', description: 'Read values from DATA statements into variables. Example: `READ x, y, z`' },
+    { name: 'RESTORE', description: 'Reset the DATA pointer to the beginning or a specific label.' },
+    { name: 'IF', description: 'Conditional statement. Example: `IF x > 10 THEN PRINT "High" ELSE PRINT "Low" END IF`' },
+    { name: 'THEN', description: 'Used with IF to specify code to execute when condition is true.' },
+    { name: 'ELSE', description: 'Specifies code to execute when IF condition is false.' },
+    { name: 'ELSEIF', description: 'Test another condition if previous IF/ELSEIF was false.' },
+    { name: 'END', description: 'Ends a block (IF, FOR, WHILE, SELECT, PROCEDURE).' },
+    { name: 'SELECT', description: 'Start a SELECT CASE block. Example: `SELECT CASE x`' },
+    { name: 'CASE', description: 'Match a value in SELECT block. Example: `CASE 1` or `CASE 5 TO 10`' },
+    { name: 'EXIT', description: 'Exit from a loop (FOR, WHILE, DO, SELECT). Example: `EXIT FOR`' },
+    { name: 'FOR', description: 'Start a FOR loop. Example: `FOR i = 1 TO 10 STEP 1`' },
+    { name: 'TO', description: 'Specifies end value in FOR loop. Example: `FOR i = 1 TO 10`' },
+    { name: 'STEP', description: 'Specifies increment in FOR loop. Example: `FOR i = 1 TO 10 STEP 2`' },
+    { name: 'NEXT', description: 'End of FOR loop. Example: `NEXT i`' },
+    { name: 'WHILE', description: 'Start a WHILE loop. Example: `WHILE x < 100`' },
+    { name: 'WEND', description: 'End of WHILE loop.' },
+    { name: 'DO', description: 'Start a DO loop. Example: `DO WHILE x < 100` or `DO UNTIL x = 0`' },
+    { name: 'LOOP', description: 'End of DO loop. Can use `LOOP WHILE` or `LOOP UNTIL`.' },
+    { name: 'UNTIL', description: 'Loop until condition becomes true. Example: `DO UNTIL x = 0`' },
+    { name: 'REPEAT', description: 'Start an infinite loop. Exit with `GOTO` or `RETURN`.' },
+    { name: 'GOTO', description: 'Jump to a label. Example: `GOTO main_loop`' },
+    { name: 'GOSUB', description: 'Call a subroutine at a label. Use RETURN to come back.' },
+    { name: 'RETURN', description: 'Return from GOSUB or exit PROCEDURE.' },
+    { name: 'ON', description: 'Conditional jump. Example: `ON x GOTO label1, label2, label3`' },
+    { name: 'PROCEDURE', description: 'Define a procedure/subroutine. Example: `PROCEDURE draw_sprite`' },
+    { name: 'SUB', description: 'Alternative keyword for PROCEDURE.' },
+    { name: 'PRINT', description: 'Display text or graphics on screen. Example: `PRINT AT 100, "Hello"`' },
+    { name: 'AT', description: 'Specify screen position for PRINT. Example: `PRINT AT 100, "Text"`' },
+    { name: 'INPUT', description: 'Read input from controllers. Not for text input.' },
+    { name: 'POKE', description: 'Write a value to memory address. Example: `POKE $1234, 100`' },
+    { name: 'PEEK', description: 'Read a value from memory address. Example: `x = PEEK($1234)`' },
+    { name: 'USR', description: 'Call assembly language routine. Example: `result = USR(address, arg1, arg2)`' },
+    { name: 'WAIT', description: 'Pause execution. `WAIT` alone waits for frame. `WAIT n` waits n frames.' },
+    { name: 'CLS', description: 'Clear the screen.' },
+    { name: 'SCREEN', description: 'Set screen mode or properties. Example: `SCREEN mode`' },
+    { name: 'DEFINE', description: 'Define graphics data. Example: `DEFINE sprite, 1, bitmap`' },
+    { name: 'MODE', description: 'Set graphics or display mode.' },
+    { name: 'SPRITE', description: 'Define or manipulate sprites (MOBs). Example: `SPRITE 0, x, y, card`' },
+    { name: 'BITMAP', description: 'Specify bitmap data for graphics.' },
+    { name: 'NORMAL', description: 'Normal bitmap display mode (not inverted or mirrored).' },
+    { name: 'INVERSE', description: 'Invert bitmap colors.' },
+    { name: 'MIRROR_X', description: 'Mirror bitmap horizontally.' },
+    { name: 'SOUND', description: 'Play a sound effect. Example: `SOUND channel, frequency, volume`' },
+    { name: 'MUSIC', description: 'Control music playback. Use MUSIC.PLAYING to check status.' },
+    { name: 'PLAY', description: 'Play music from data. Example: `PLAY music_data`' },
+    { name: 'SIMPLE', description: 'Simple music mode (monophonic).' },
+    { name: 'STOP', description: 'Stop music playback.' },
+    { name: 'JUMP', description: 'Jump to a point in music sequence.' },
+    { name: 'SPEED', description: 'Set music playback speed.' },
+    { name: 'OFF', description: 'Turn something off (sound channel, music, etc).' },
+    { name: 'MIX', description: 'Mix audio channels.' },
+    { name: 'TYPE', description: 'Specify sound type.' },
+    { name: 'NOISE', description: 'Play noise sound.' },
+    { name: 'VOL', description: 'Set volume level.' },
+    { name: 'VALUE', description: 'Specify a value parameter.' },
+    { name: 'FAST', description: 'Fast mode (context-dependent).' },
+    { name: 'VOICE', description: 'Intellivoice speech control. Check VOICE.AVAILABLE and VOICE.PLAYING.' },
+    { name: 'ENABLE', description: 'Enable a feature (interrupts, voice, etc).' },
+    { name: 'DISABLE', description: 'Disable a feature (interrupts, voice, etc).' },
+    { name: 'INCLUDE', description: 'Include another BASIC file. Example: `INCLUDE "sprites.bas"`' },
+    { name: 'ASM', description: 'Insert inline assembly code. End with END ASM.' },
+    { name: 'CALL', description: 'Call an assembly language routine.' },
+    { name: 'STACK_CHECK', description: 'Enable stack overflow checking (development aid).' },
+    { name: 'CONST', description: 'Define a constant. Example: `CONST MAX_SPEED = 10`' },
+    { name: 'VARPTR', description: 'Get the address of a variable. Example: `addr = VARPTR(x)`' },
+    { name: 'SEGMENT', description: 'Specify memory segment for code/data placement.' },
+    { name: 'BANK', description: 'Specify memory bank for code/data.' },
+    { name: 'MAP', description: 'Memory mapping control.' },
+    { name: 'AND', description: 'Logical/bitwise AND operator. Example: `IF x > 5 AND y < 10 THEN`' },
+    { name: 'OR', description: 'Logical/bitwise OR operator. Example: `IF x = 1 OR x = 2 THEN`' },
+    { name: 'XOR', description: 'Logical/bitwise XOR operator. Example: `result = x XOR y`' },
+    { name: 'NOT', description: 'Logical/bitwise NOT operator. Example: `IF NOT finished THEN`' }
 ];
 
 const FUNCTIONS = [
@@ -128,9 +190,10 @@ connection.onCompletion(
         // Add keywords
         KEYWORDS.forEach(keyword => {
             items.push({
-                label: keyword,
+                label: keyword.name,
                 kind: CompletionItemKind.Keyword,
-                data: { type: 'keyword', name: keyword }
+                documentation: keyword.description,
+                data: { type: 'keyword', name: keyword.name }
             });
         });
 
@@ -225,11 +288,12 @@ connection.onHover(
         }
         
         // Check if it's a keyword
-        if (KEYWORDS.includes(word)) {
+        const keyword = KEYWORDS.find(k => k.name === word);
+        if (keyword) {
             return {
                 contents: {
                     kind: MarkupKind.Markdown,
-                    value: `**${word}** (keyword)`
+                    value: `**${keyword.name}**\n\n${keyword.description}`
                 }
             };
         }
