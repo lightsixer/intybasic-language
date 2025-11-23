@@ -10,6 +10,7 @@ This extension provides comprehensive language support and integrated build tool
 * **Integrated Build Chain:** Seamlessly compile your `.bas` files to `.asm` using the **IntyBasic cross-compiler** and assemble them into a runable `.bin` ROM file using **AS1600**.
 * **Emulator Launch:** Directly launch and run your compiled ROM files in the **jzIntv emulator** from within VS Code.
 * **Debug Support:** Build with source maps and symbol files, then launch jzIntv's debugger with your IntyBASIC source code visible alongside the disassembly.
+* **JLP & Intellivoice:** Optional JLP savegame support (uses ROM name + `.sav` for FLASH persistence) and optional Intellivoice configuration.
 * **Error Reporting:** Display build errors from the IntyBasic cross-compiler directly in the VS Code **Problems Panel**, linking errors back to the correct line in your source file.
 * **Clean Command:** Remove all build artifacts (both regular and debug) with a single command.
 * **Cross-Platform:** Works on Windows, macOS, and Linux.
@@ -45,6 +46,8 @@ After installing the extension, you must configure the paths to your tools.
 | `intybasic.execRomPath` | Path to the `exec.bin` ROM image (used by `jzintv -e`). |
 | `intybasic.gromRomPath` | Path to the `grom.bin` ROM image (used by `jzintv -g`). |
 | `intybasic.intysmapPath` | (Optional) Path to the `intysmap` utility for debug builds. May not be needed with newer AS1600 versions. |
+| `intybasic.enableIntellivoice` | (Optional) Enable Intellivoice support when running emulator. Default: false. |
+| `intybasic.enableJlpSavegame` | (Optional) Enable JLP savegame support for FLASH persistence. Savegame uses ROM name + `.sav`. Default: false. |
 
 ---
 
@@ -82,6 +85,23 @@ When you run a debug build and launch the debugger, jzIntv opens in a terminal w
 - Step through code
 - Inspect memory and registers
 - Use all standard jzIntv debugger commands
+
+**Useful Debugger Commands:**
+- `s` or `s <n>` - Step through `n` instructions (default: 1). Shows disassembly and register state.
+- `r` or `r <n>` - Run `n` cycles silently (default: forever). Use F4/BREAK to stop.
+- `t` - Trace over JSR calls (step-over functions).
+- `b <addr>` - Set breakpoint at address. Use symbol names from your code!
+- `n <addr>` - Remove breakpoint at address.
+- `u <addr> <n>` - Disassemble `n` instructions at address.
+- `m <addr> <n>` - Show `n` memory locations at address.
+- `w <addr1> <addr2>` - Toggle write watch on address range.
+- `@ <addr1> <addr2>` - Toggle read watch on address range.
+- `v <addr> <n>` - Show source code around address (when source maps loaded).
+- `h` - Toggle history logging (use `d` to dump history to `dump.hst`).
+- `?` - Show help.
+- `q` - Quit debugger.
+
+Press `ENTER` alone to repeat the last step/trace command.
 
 Type `?` in the debugger for help on available commands.
 

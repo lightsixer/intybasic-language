@@ -72,6 +72,12 @@ const JZINTV_EXEC_PATH = getConfig('execRomPath');
 const JZINTV_GROM_PATH = getConfig('gromRomPath');
 const INTYSMAP_PATH = getConfig('intysmapPath');
 const OUTPUT_DIR = getConfig('outputDirectory') || 'bin';
+function getConfigBoolean(key) {
+    const config = vscode.workspace.getConfiguration('intybasic');
+    return config.get(key) || false;
+}
+const ENABLE_INTELLIVOICE = getConfigBoolean('enableIntellivoice');
+const ENABLE_JLP_SAVEGAME = getConfigBoolean('enableJlpSavegame');
 // Update warning message for new required paths (optional, but good practice)
 if (!INTYBASIC_COMPILER_PATH || !INTYBASIC_LIBRARY_PATH || !AS1600_ASSEMBLER_PATH || !JZINTV_EMULATOR_PATH || !JZINTV_EXEC_PATH || !JZINTV_GROM_PATH) {
     vscode.window.showWarningMessage('Some IntyBasic tool or ROM paths are not configured. Please check your extension settings.');
@@ -216,9 +222,12 @@ function activate(context) {
             }
             diagnosticCollection.clear();
             // Assemble with source map and symbol file flags
+            const lstPath = path.join(outputDir, `${fileBaseName}.lst`);
             const assembleArgs = [
                 '-o',
                 `"${path.join(outputDir, fileBaseName)}"`,
+                '-l',
+                `"${lstPath}"`,
                 '-j',
                 `"${smapPath}"`,
                 '-s',
@@ -313,6 +322,12 @@ function activate(context) {
         if (JZINTV_GROM_PATH) {
             args.push('-g', `"${JZINTV_GROM_PATH}"`);
         }
+        if (ENABLE_INTELLIVOICE) {
+            args.push('-v1');
+        }
+        // Add JLP savegame support - always use ROM name + .sav
+        const savegamePath = romPath.replace(/\.bin$/, '.sav');
+        args.push('--jlp', `--jlp-savegame="${savegamePath}"`);
         args.push(`"${romPath}"`);
         // Detect if we're on Windows (PowerShell) or Unix (bash/zsh)
         const isWindows = process.platform === 'win32';
@@ -388,6 +403,12 @@ function activate(context) {
         if (JZINTV_GROM_PATH) {
             args.push('-g', `"${JZINTV_GROM_PATH}"`);
         }
+        if (ENABLE_INTELLIVOICE) {
+            args.push('-v1');
+        }
+        // Add JLP savegame support - always use ROM name + .sav
+        const savegamePath = romPath.replace(/\.bin$/, '.sav');
+        args.push('--jlp', `--jlp-savegame="${savegamePath}"`);
         args.push(`"${romPath}"`);
         // Detect if we're on Windows (PowerShell) or Unix (bash/zsh)
         const isWindows = process.platform === 'win32';

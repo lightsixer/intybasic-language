@@ -2,7 +2,7 @@
   "name": "intybasic-language",
   "displayName": "IntyBASIC Language",
   "description": "Language support for IntyBASIC.",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "engines": {
     "vscode": "^1.106.1"
   },
@@ -49,6 +49,16 @@
           "type": "string",
           "default": "",
           "description": "Absolute path to the 'intysmap' utility (ships with IntyBASIC). Note: May be obsolete with newer AS1600 versions. Leave empty to skip."
+        },
+        "intybasic.enableIntellivoice": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable Intellivoice support when running the emulator (adds -v1 flag)."
+        },
+        "intybasic.enableJlpSavegame": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable JLP savegame support for FLASH persistence. Savegame file will use ROM name + .sav extension."
         }
       }
     },
