@@ -22,12 +22,14 @@
             "sdk"
           ],
           "default": "standalone",
-          "description": "Toolchain mode: 'standalone' uses individual tool paths, 'sdk' uses IntyBASIC SDK wrapper scripts."
+          "order": 1,
+          "markdownDescription": "**Toolchain mode:** Choose `standalone` to configure individual tool paths below, or `sdk` to use IntyBASIC SDK wrapper scripts (only requires SDK path)."
         },
         "intybasic.sdkPath": {
           "type": "string",
           "default": "",
-          "description": "Path to IntyBASIC SDK root directory (required when toolchainMode is 'sdk'). The SDK provides wrapper scripts and bundled tools."
+          "order": 2,
+          "markdownDescription": "**SDK Path:** Path to IntyBASIC SDK root directory. **Only required when toolchainMode is set to `sdk`.** Leave empty for standalone mode."
         },
         "intybasic.compilerPath": {
           "type": "string",
