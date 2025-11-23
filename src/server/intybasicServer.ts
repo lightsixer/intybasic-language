@@ -14,7 +14,10 @@ import {
     SignatureInformation,
     ParameterInformation,
     Diagnostic,
-    DiagnosticSeverity
+    DiagnosticSeverity,
+    Definition,
+    Location,
+    ReferenceParams
 } from 'vscode-languageserver/node';
 
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -48,7 +51,9 @@ connection.onInitialize((params: InitializeParams) => {
             hoverProvider: true,
             signatureHelpProvider: {
                 triggerCharacters: ['(', ',', ' ']
-            }
+            },
+            definitionProvider: true,
+            referencesProvider: true
         }
     };
 
@@ -639,6 +644,182 @@ function validateDocument(document: TextDocument): void {
     
     connection.sendDiagnostics({ uri: document.uri, diagnostics });
 }
+
+// Symbol extraction helpers
+interface Symbol {
+    name: string;
+    type: 'variable' | 'procedure' | 'label' | 'constant';
+    line: number;
+    character: number;
+    endCharacter: number;
+}
+
+function extractSymbols(document: TextDocument): Symbol[] {
+    const symbols: Symbol[] = [];
+    const text = document.getText();
+    const lines = text.split(/\r?\n/);
+    
+    for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+        const line = lines[lineNum];
+        const upperLine = line.toUpperCase();
+        
+        // Skip comments
+        if (/^\s*('|REM\b)/i.test(line)) {
+            continue;
+        }
+        
+        // Find DIM declarations
+        const dimMatch = /\bDIM\s+(#?)([A-Za-z_][A-Za-z0-9_]*)/gi;
+        let match;
+        while ((match = dimMatch.exec(line)) !== null) {
+            symbols.push({
+                name: match[2].toUpperCase(),
+                type: 'variable',
+                line: lineNum,
+                character: match.index + match[0].indexOf(match[2]),
+                endCharacter: match.index + match[0].indexOf(match[2]) + match[2].length
+            });
+        }
+        
+        // Find CONST declarations
+        const constMatch = /\bCONST\s+([A-Za-z_][A-Za-z0-9_]*)\s*=/gi;
+        while ((match = constMatch.exec(line)) !== null) {
+            symbols.push({
+                name: match[1].toUpperCase(),
+                type: 'constant',
+                line: lineNum,
+                character: match.index + match[0].indexOf(match[1]),
+                endCharacter: match.index + match[0].indexOf(match[1]) + match[1].length
+            });
+        }
+        
+        // Find PROCEDURE/SUB declarations (label: PROCEDURE or just label:)
+        const procMatch = /^([A-Za-z_][A-Za-z0-9_]*):\s*(?:PROCEDURE|SUB)?\s*$/i;
+        const procResult = procMatch.exec(line);
+        if (procResult) {
+            symbols.push({
+                name: procResult[1].toUpperCase(),
+                type: 'procedure',
+                line: lineNum,
+                character: 0,
+                endCharacter: procResult[1].length
+            });
+        }
+        
+        // Find label definitions (standalone labels)
+        const labelMatch = /^([A-Za-z_][A-Za-z0-9_]*):\s*$/;
+        const labelResult = labelMatch.exec(line);
+        if (labelResult && !procResult) {
+            symbols.push({
+                name: labelResult[1].toUpperCase(),
+                type: 'label',
+                line: lineNum,
+                character: 0,
+                endCharacter: labelResult[1].length
+            });
+        }
+    }
+    
+    return symbols;
+}
+
+function findSymbolAtPosition(document: TextDocument, line: number, character: number): string | undefined {
+    const text = document.getText();
+    const offset = document.offsetAt({ line, character });
+    
+    // Find word boundaries
+    let start = offset;
+    let end = offset;
+    
+    while (start > 0 && /[A-Za-z0-9_#.]/.test(text[start - 1])) {
+        start--;
+    }
+    while (end < text.length && /[A-Za-z0-9_#.]/.test(text[end])) {
+        end++;
+    }
+    
+    const word = text.substring(start, end).toUpperCase();
+    // Remove leading # if present
+    return word.startsWith('#') ? word.substring(1) : word;
+}
+
+// Go to Definition provider
+connection.onDefinition(
+    (params: TextDocumentPositionParams): Definition | undefined => {
+        const document = documents.get(params.textDocument.uri);
+        if (!document) {
+            return undefined;
+        }
+        
+        const symbolName = findSymbolAtPosition(document, params.position.line, params.position.character);
+        if (!symbolName) {
+            return undefined;
+        }
+        
+        const symbols = extractSymbols(document);
+        const definition = symbols.find(s => s.name === symbolName);
+        
+        if (definition) {
+            return Location.create(
+                params.textDocument.uri,
+                {
+                    start: { line: definition.line, character: definition.character },
+                    end: { line: definition.line, character: definition.endCharacter }
+                }
+            );
+        }
+        
+        return undefined;
+    }
+);
+
+// Find References provider
+connection.onReferences(
+    (params: ReferenceParams): Location[] => {
+        const document = documents.get(params.textDocument.uri);
+        if (!document) {
+            return [];
+        }
+        
+        const symbolName = findSymbolAtPosition(document, params.position.line, params.position.character);
+        if (!symbolName) {
+            return [];
+        }
+        
+        const locations: Location[] = [];
+        const text = document.getText();
+        const lines = text.split(/\r?\n/);
+        
+        // Find all occurrences of the symbol
+        for (let lineNum = 0; lineNum < lines.length; lineNum++) {
+            const line = lines[lineNum];
+            const upperLine = line.toUpperCase();
+            
+            // Skip comments
+            if (/^\s*('|REM\b)/i.test(line)) {
+                continue;
+            }
+            
+            // Find all word boundaries that match the symbol
+            const wordPattern = new RegExp(`\\b${symbolName}\\b`, 'gi');
+            let match;
+            
+            while ((match = wordPattern.exec(line)) !== null) {
+                locations.push(
+                    Location.create(
+                        params.textDocument.uri,
+                        {
+                            start: { line: lineNum, character: match.index },
+                            end: { line: lineNum, character: match.index + match[0].length }
+                        }
+                    )
+                );
+            }
+        }
+        
+        return locations;
+    }
+);
 
 // Make the text document manager listen on the connection
 documents.listen(connection);
