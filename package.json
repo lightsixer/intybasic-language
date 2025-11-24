@@ -4,6 +4,10 @@
   "description": "Language support for IntyBASIC.",
   "icon": "icon.png",
   "version": "0.1.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lightsixer/intybasic-language.git"
+  },
   "engines": {
     "vscode": "^1.106.1"
   },
