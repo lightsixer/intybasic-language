@@ -167,6 +167,261 @@ export function activate(context: vscode.ExtensionContext) {
     const outputChannel = vscode.window.createOutputChannel('IntyBASIC Build');
     context.subscriptions.push(outputChannel);
 
+    // ==================== SDK Mode Functions ====================
+
+    // Helper function to get SDK script path based on platform
+    function getSDKScriptPath(scriptName: string, sdkPath: string): string {
+        if (process.platform === 'win32') {
+            return path.join(sdkPath, 'bin', `${scriptName}.BAT`);
+        } else if (process.platform === 'darwin') {
+            // macOS uses Perl scripts
+            return scriptName; // Will be found in PATH after SDK setup
+        } else {
+            throw new Error('SDK mode is not supported on Linux. Please use standalone mode.');
+        }
+    }
+
+    // Helper function to build ROM using SDK
+    async function buildROMSdk(editor: vscode.TextEditor): Promise<boolean> {
+        const toolchainConfig = getToolchainConfig();
+        if (!toolchainConfig.sdkPath) {
+            vscode.window.showErrorMessage('SDK path is not configured.');
+            return false;
+        }
+
+        diagnosticCollection.clear();
+
+        const projectName = getProjectName(editor.document.fileName);
+        const isExample = detectSdkProject(editor.document.fileName) && 
+                         (editor.document.fileName.includes('Examples') || 
+                          editor.document.fileName.includes('Contributions'));
+        
+        outputChannel.clear();
+        outputChannel.appendLine('Building IntyBASIC ROM using SDK...');
+        outputChannel.appendLine(`Project: ${projectName}`);
+        outputChannel.appendLine(`SDK Path: ${toolchainConfig.sdkPath}`);
+        outputChannel.appendLine('');
+
+        try {
+            let buildCommand: string;
+            const flags: string[] = [];
+            
+            if (isExample) {
+                flags.push('-x');
+            }
+            if (ENABLE_JLP_SAVEGAME) {
+                flags.push('-j');
+            }
+
+            if (process.platform === 'win32') {
+                const scriptPath = getSDKScriptPath('INTYBUILD', toolchainConfig.sdkPath);
+                buildCommand = `"${scriptPath}" ${flags.join(' ')} "${projectName}"`;
+            } else {
+                // macOS - assume Perl scripts are in PATH after setting INTYBASIC_INSTALL
+                buildCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intybuild ${flags.join(' ')} "${projectName}"`;
+            }
+
+            outputChannel.appendLine(`Command: ${buildCommand}`);
+            outputChannel.appendLine('');
+
+            const { stdout, stderr } = await execAsync(buildCommand, { 
+                cwd: toolchainConfig.sdkPath 
+            });
+            const output = stdout + stderr;
+            
+            outputChannel.appendLine(output);
+            
+            // Parse for errors
+            const errors = parseIntyBasicErrors(output, editor.document.uri);
+            if (errors.length > 0) {
+                diagnosticCollection.set(editor.document.uri, errors);
+                outputChannel.show(true);
+                vscode.window.showErrorMessage(`IntyBASIC build failed with ${errors.length} error(s). Check the Problems panel.`);
+                return false;
+            }
+            
+            diagnosticCollection.clear();
+            outputChannel.appendLine('');
+            outputChannel.appendLine('Build completed successfully!');
+            outputChannel.show(true);
+            
+            return true;
+            
+        } catch (error: any) {
+            const output = (error.stdout || '') + (error.stderr || '');
+            outputChannel.appendLine(output);
+            outputChannel.show(true);
+            
+            const errors = parseIntyBasicErrors(output, editor.document.uri);
+            
+            if (errors.length > 0) {
+                diagnosticCollection.set(editor.document.uri, errors);
+                vscode.window.showErrorMessage(`IntyBASIC build failed with ${errors.length} error(s). Check the Problems panel.`);
+            } else {
+                vscode.window.showErrorMessage(`Build failed: ${error.message}`);
+            }
+            return false;
+        }
+    }
+
+    // Helper function to run ROM using SDK
+    async function runROMSdk(editor: vscode.TextEditor): Promise<void> {
+        const toolchainConfig = getToolchainConfig();
+        if (!toolchainConfig.sdkPath) {
+            vscode.window.showErrorMessage('SDK path is not configured.');
+            return;
+        }
+
+        const projectName = getProjectName(editor.document.fileName);
+        const isExample = detectSdkProject(editor.document.fileName) && 
+                         (editor.document.fileName.includes('Examples') || 
+                          editor.document.fileName.includes('Contributions'));
+
+        const flags: string[] = [];
+        if (isExample) {
+            flags.push('-x');
+        }
+
+        try {
+            let runCommand: string;
+
+            if (process.platform === 'win32') {
+                const scriptPath = getSDKScriptPath('INTYRUN', toolchainConfig.sdkPath);
+                runCommand = `"${scriptPath}" ${flags.join(' ')} "${projectName}"`;
+            } else {
+                runCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intyrun ${flags.join(' ')} "${projectName}"`;
+            }
+
+            const terminal = vscode.window.createTerminal({
+                name: 'IntyBASIC Emulator',
+                cwd: toolchainConfig.sdkPath
+            });
+            terminal.show();
+            terminal.sendText(runCommand);
+            
+        } catch (error: any) {
+            vscode.window.showErrorMessage(`Failed to run emulator: ${error.message}`);
+        }
+    }
+
+    // Helper function to run ROM in debugger using SDK
+    async function runROMDebugSdk(editor: vscode.TextEditor): Promise<void> {
+        const toolchainConfig = getToolchainConfig();
+        if (!toolchainConfig.sdkPath) {
+            vscode.window.showErrorMessage('SDK path is not configured.');
+            return;
+        }
+
+        const projectName = getProjectName(editor.document.fileName);
+        const isExample = detectSdkProject(editor.document.fileName) && 
+                         (editor.document.fileName.includes('Examples') || 
+                          editor.document.fileName.includes('Contributions'));
+
+        const flags: string[] = [];
+        if (isExample) {
+            flags.push('-x');
+        }
+
+        try {
+            let debugCommand: string;
+
+            if (process.platform === 'win32') {
+                const scriptPath = getSDKScriptPath('INTYDBUG', toolchainConfig.sdkPath);
+                debugCommand = `"${scriptPath}" ${flags.join(' ')} "${projectName}"`;
+            } else {
+                debugCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intydbug ${flags.join(' ')} "${projectName}"`;
+            }
+
+            const terminal = vscode.window.createTerminal({
+                name: 'IntyBASIC Debugger',
+                cwd: toolchainConfig.sdkPath
+            });
+            terminal.show();
+            terminal.sendText(debugCommand);
+            
+        } catch (error: any) {
+            vscode.window.showErrorMessage(`Failed to run debugger: ${error.message}`);
+        }
+    }
+
+    // Helper function to create new SDK project
+    async function createSDKProject(): Promise<void> {
+        const toolchainConfig = getToolchainConfig();
+        if (toolchainConfig.mode !== 'sdk' || !toolchainConfig.sdkPath) {
+            vscode.window.showErrorMessage('This command requires SDK mode to be enabled and SDK path to be configured.');
+            return;
+        }
+
+        const projectName = await vscode.window.showInputBox({
+            prompt: 'Enter project name',
+            placeHolder: 'mygame',
+            validateInput: (value) => {
+                if (!value || value.trim().length === 0) {
+                    return 'Project name is required';
+                }
+                if (!/^[a-zA-Z][a-zA-Z0-9_]*$/.test(value)) {
+                    return 'Project name must start with a letter and contain only letters, numbers, and underscores';
+                }
+                return null;
+            }
+        });
+
+        if (!projectName) {
+            return;
+        }
+
+        const authorName = await vscode.window.showInputBox({
+            prompt: 'Enter author name (optional)',
+            placeHolder: 'Your Name'
+        });
+
+        try {
+            let newCommand: string;
+            const args: string[] = [projectName];
+            
+            if (authorName) {
+                args.push(`"${authorName}"`);
+            }
+
+            if (process.platform === 'win32') {
+                const scriptPath = getSDKScriptPath('INTYNEW', toolchainConfig.sdkPath);
+                newCommand = `"${scriptPath}" ${args.join(' ')}`;
+            } else {
+                newCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intynew ${args.join(' ')}`;
+            }
+
+            outputChannel.clear();
+            outputChannel.appendLine('Creating new SDK project...');
+            outputChannel.appendLine(`Command: ${newCommand}`);
+            outputChannel.appendLine('');
+
+            const { stdout, stderr } = await execAsync(newCommand, { 
+                cwd: toolchainConfig.sdkPath 
+            });
+            
+            outputChannel.appendLine(stdout + stderr);
+            outputChannel.show(true);
+
+            // Open the new project file
+            const projectFilePath = path.join(toolchainConfig.sdkPath, 'Projects', projectName, `${projectName}.bas`);
+            
+            if (fs.existsSync(projectFilePath)) {
+                const doc = await vscode.workspace.openTextDocument(projectFilePath);
+                await vscode.window.showTextDocument(doc);
+                vscode.window.showInformationMessage(`Project '${projectName}' created successfully!`);
+            } else {
+                vscode.window.showWarningMessage('Project created but file not found at expected location.');
+            }
+            
+        } catch (error: any) {
+            outputChannel.appendLine((error.stdout || '') + (error.stderr || ''));
+            outputChannel.show(true);
+            vscode.window.showErrorMessage(`Failed to create project: ${error.message}`);
+        }
+    }
+
+    // ==================== Standalone Mode Functions ====================
+
     // Helper function to build ROM
     async function buildROM(editor: vscode.TextEditor): Promise<boolean> {
         diagnosticCollection.clear();
@@ -564,8 +819,13 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) { return; }
 
+        const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM...');
-        const success = await buildROM(editor);
+        
+        const success = toolchainConfig.mode === 'sdk' 
+            ? await buildROMSdk(editor)
+            : await buildROM(editor);
+            
         if (success) {
             vscode.window.showInformationMessage('Build successful!');
         }
@@ -576,7 +836,12 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) { return; }
         
-        await runROM(editor);
+        const toolchainConfig = getToolchainConfig();
+        if (toolchainConfig.mode === 'sdk') {
+            await runROMSdk(editor);
+        } else {
+            await runROM(editor);
+        }
     });
 
     // 3. Build and Run Command
@@ -584,11 +849,20 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) { return; }
 
+        const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM...');
-        const success = await buildROM(editor);
+        
+        const success = toolchainConfig.mode === 'sdk'
+            ? await buildROMSdk(editor)
+            : await buildROM(editor);
+            
         if (success) {
             vscode.window.showInformationMessage('Build successful! Starting emulator...');
-            await runROM(editor);
+            if (toolchainConfig.mode === 'sdk') {
+                await runROMSdk(editor);
+            } else {
+                await runROM(editor);
+            }
         }
     });
 
@@ -645,8 +919,13 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) { return; }
 
+        const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM (Debug)...');
-        const success = await buildROMDebug(editor);
+        
+        const success = toolchainConfig.mode === 'sdk'
+            ? await buildROMSdk(editor)  // SDK mode doesn't distinguish debug builds
+            : await buildROMDebug(editor);
+            
         if (success) {
             vscode.window.showInformationMessage('Debug build successful!');
         }
@@ -657,7 +936,12 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) { return; }
         
-        await runROMDebug(editor);
+        const toolchainConfig = getToolchainConfig();
+        if (toolchainConfig.mode === 'sdk') {
+            await runROMDebugSdk(editor);
+        } else {
+            await runROMDebug(editor);
+        }
     });
 
     // 7. Debug Build and Run Command
@@ -665,15 +949,29 @@ export function activate(context: vscode.ExtensionContext) {
         const editor = vscode.window.activeTextEditor;
         if (!editor) { return; }
 
+        const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM (Debug)...');
-        const success = await buildROMDebug(editor);
+        
+        const success = toolchainConfig.mode === 'sdk'
+            ? await buildROMSdk(editor)
+            : await buildROMDebug(editor);
+            
         if (success) {
             vscode.window.showInformationMessage('Debug build successful! Starting debugger...');
-            await runROMDebug(editor);
+            if (toolchainConfig.mode === 'sdk') {
+                await runROMDebugSdk(editor);
+            } else {
+                await runROMDebug(editor);
+            }
         }
     });
 
-    context.subscriptions.push(disposableBuild, disposableRun, disposableBuildAndRun, disposableClean, disposableDebugBuild, disposableDebugRun, disposableDebugBuildAndRun);
+    // 8. New SDK Project Command
+    let disposableNewProject = vscode.commands.registerCommand('intybasic.newProject', async () => {
+        await createSDKProject();
+    });
+
+    context.subscriptions.push(disposableBuild, disposableRun, disposableBuildAndRun, disposableClean, disposableDebugBuild, disposableDebugRun, disposableDebugBuildAndRun, disposableNewProject);
 }
 
 // This method is called when your extension is deactivated

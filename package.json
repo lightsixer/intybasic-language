@@ -126,6 +126,10 @@
       {
         "command": "intybasic.debugBuildAndRun",
         "title": "IntyBASIC: Debug Build and Run in Debugger"
+      },
+      {
+        "command": "intybasic.newProject",
+        "title": "IntyBASIC: New SDK Project (SDK mode only)"
       }
     ],
     "problemMatchers": [
