@@ -195,7 +195,9 @@ function activate(context) {
             }
             if (process.platform === 'win32') {
                 const scriptPath = getSDKScriptPath('INTYBUILD', toolchainConfig.sdkPath);
-                buildCommand = `"${scriptPath}" ${flags.join(' ')} "${projectName}"`;
+                const binPath = path.join(toolchainConfig.sdkPath, 'bin');
+                // Set INTYBASIC_INSTALL, add bin to PATH, and execute batch file
+                buildCommand = `cmd /c "set "INTYBASIC_INSTALL=${toolchainConfig.sdkPath}" && set "PATH=${binPath};%PATH%" && cd /d "${toolchainConfig.sdkPath}" && "${scriptPath}" ${flags.join(' ')} ${projectName}"`;
             }
             else {
                 // macOS - assume Perl scripts are in PATH after setting INTYBASIC_INSTALL
@@ -203,9 +205,7 @@ function activate(context) {
             }
             outputChannel.appendLine(`Command: ${buildCommand}`);
             outputChannel.appendLine('');
-            const { stdout, stderr } = await execAsync(buildCommand, {
-                cwd: toolchainConfig.sdkPath
-            });
+            const { stdout, stderr } = await execAsync(buildCommand);
             const output = stdout + stderr;
             outputChannel.appendLine(output);
             // Parse for errors
@@ -254,19 +254,19 @@ function activate(context) {
         }
         try {
             let runCommand;
+            const terminal = vscode.window.createTerminal({
+                name: 'IntyBASIC Emulator'
+            });
+            terminal.show();
             if (process.platform === 'win32') {
-                const scriptPath = getSDKScriptPath('INTYRUN', toolchainConfig.sdkPath);
-                runCommand = `"${scriptPath}" ${flags.join(' ')} "${projectName}"`;
+                // Rely on system PATH and INTYBASIC_INSTALL from SDK installation
+                terminal.sendText(`cd "${toolchainConfig.sdkPath}"`);
+                terminal.sendText(`.\\bin\\INTYRUN.BAT ${flags.join(' ')} ${projectName}`);
             }
             else {
                 runCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intyrun ${flags.join(' ')} "${projectName}"`;
+                terminal.sendText(runCommand);
             }
-            const terminal = vscode.window.createTerminal({
-                name: 'IntyBASIC Emulator',
-                cwd: toolchainConfig.sdkPath
-            });
-            terminal.show();
-            terminal.sendText(runCommand);
         }
         catch (error) {
             vscode.window.showErrorMessage(`Failed to run emulator: ${error.message}`);
@@ -289,19 +289,19 @@ function activate(context) {
         }
         try {
             let debugCommand;
+            const terminal = vscode.window.createTerminal({
+                name: 'IntyBASIC Debugger'
+            });
+            terminal.show();
             if (process.platform === 'win32') {
-                const scriptPath = getSDKScriptPath('INTYDBUG', toolchainConfig.sdkPath);
-                debugCommand = `"${scriptPath}" ${flags.join(' ')} "${projectName}"`;
+                // Rely on system PATH and INTYBASIC_INSTALL from SDK installation
+                terminal.sendText(`cd "${toolchainConfig.sdkPath}"`);
+                terminal.sendText(`.\\bin\\INTYDBUG.BAT ${flags.join(' ')} ${projectName}`);
             }
             else {
                 debugCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intydbug ${flags.join(' ')} "${projectName}"`;
+                terminal.sendText(debugCommand);
             }
-            const terminal = vscode.window.createTerminal({
-                name: 'IntyBASIC Debugger',
-                cwd: toolchainConfig.sdkPath
-            });
-            terminal.show();
-            terminal.sendText(debugCommand);
         }
         catch (error) {
             vscode.window.showErrorMessage(`Failed to run debugger: ${error.message}`);
@@ -342,7 +342,9 @@ function activate(context) {
             }
             if (process.platform === 'win32') {
                 const scriptPath = getSDKScriptPath('INTYNEW', toolchainConfig.sdkPath);
-                newCommand = `"${scriptPath}" ${args.join(' ')}`;
+                const binPath = path.join(toolchainConfig.sdkPath, 'bin');
+                // Set INTYBASIC_INSTALL, add bin to PATH, and execute
+                newCommand = `cmd /c "set "INTYBASIC_INSTALL=${toolchainConfig.sdkPath}" && set "PATH=${binPath};%PATH%" && cd /d "${toolchainConfig.sdkPath}" && "${scriptPath}" ${args.join(' ')}"`;
             }
             else {
                 newCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intynew ${args.join(' ')}`;
@@ -351,16 +353,16 @@ function activate(context) {
             outputChannel.appendLine('Creating new SDK project...');
             outputChannel.appendLine(`Command: ${newCommand}`);
             outputChannel.appendLine('');
-            const { stdout, stderr } = await execAsync(newCommand, {
-                cwd: toolchainConfig.sdkPath
-            });
+            const { stdout, stderr } = await execAsync(newCommand);
             outputChannel.appendLine(stdout + stderr);
             outputChannel.show(true);
-            // Open the new project file
-            const projectFilePath = path.join(toolchainConfig.sdkPath, 'Projects', projectName, `${projectName}.bas`);
+            // Open the project folder as workspace
+            const projectFolderPath = path.join(toolchainConfig.sdkPath, 'Projects', projectName);
+            const projectFilePath = path.join(projectFolderPath, `${projectName}.bas`);
             if (fs.existsSync(projectFilePath)) {
-                const doc = await vscode.workspace.openTextDocument(projectFilePath);
-                await vscode.window.showTextDocument(doc);
+                const projectUri = vscode.Uri.file(projectFolderPath);
+                // Open the project folder
+                await vscode.commands.executeCommand('vscode.openFolder', projectUri, { forceNewWindow: false });
                 vscode.window.showInformationMessage(`Project '${projectName}' created successfully!`);
             }
             else {
