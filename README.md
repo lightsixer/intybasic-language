@@ -108,17 +108,6 @@ If you accidentally dismissed the prompt or need to change permissions later:
 
 Alternatively, you can avoid this issue by installing the SDK to a less protected location like `/Applications/IntyBASIC-SDK` or `~/IntyBASIC-SDK` (in your home directory root), then update the SDK Path setting accordingly.
 
-#### 4. macOS: Grant Documents Folder Access
-
-**macOS users only:** If the SDK is installed in your Documents folder (the default location), macOS will prompt you to grant VS Code access when you first run an SDK command. You must approve this prompt for SDK commands to work.
-
-If you accidentally dismissed the prompt or need to change permissions later:
-1. Go to **System Settings > Privacy & Security > Files and Folders**
-2. Find **Visual Studio Code** in the list
-3. Enable **Documents Folder** access
-
-Alternatively, you can avoid this issue by installing the SDK to a less protected location like `/Applications/IntyBASIC-SDK` or `~/IntyBASIC-SDK` (in your home directory root), then update the SDK Path setting accordingly.
-
 #### 5. SDK Project Structure
 
 The SDK expects projects in specific folders:
