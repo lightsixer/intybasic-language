@@ -97,7 +97,29 @@ Download and install the IntyBASIC SDK from the official source. The SDK include
 
 After installing the SDK, **restart VS Code** so it can inherit the environment variables set by the SDK installer (particularly `PATH` and `INTYBASIC_INSTALL`).
 
-#### 4. SDK Project Structure
+#### 4. macOS: Grant Documents Folder Access
+
+**macOS users only:** If the SDK is installed in your Documents folder (the default location), macOS will prompt you to grant VS Code access when you first run an SDK command. You must approve this prompt for SDK commands to work.
+
+If you accidentally dismissed the prompt or need to change permissions later:
+1. Go to **System Settings > Privacy & Security > Files and Folders**
+2. Find **Visual Studio Code** in the list
+3. Enable **Documents Folder** access
+
+Alternatively, you can avoid this issue by installing the SDK to a less protected location like `/Applications/IntyBASIC-SDK` or `~/IntyBASIC-SDK` (in your home directory root), then update the SDK Path setting accordingly.
+
+#### 4. macOS: Grant Documents Folder Access
+
+**macOS users only:** If the SDK is installed in your Documents folder (the default location), macOS will prompt you to grant VS Code access when you first run an SDK command. You must approve this prompt for SDK commands to work.
+
+If you accidentally dismissed the prompt or need to change permissions later:
+1. Go to **System Settings > Privacy & Security > Files and Folders**
+2. Find **Visual Studio Code** in the list
+3. Enable **Documents Folder** access
+
+Alternatively, you can avoid this issue by installing the SDK to a less protected location like `/Applications/IntyBASIC-SDK` or `~/IntyBASIC-SDK` (in your home directory root), then update the SDK Path setting accordingly.
+
+#### 5. SDK Project Structure
 
 The SDK expects projects in specific folders:
 - `Projects/` - Your custom projects
@@ -106,7 +128,7 @@ The SDK expects projects in specific folders:
 
 Each project has its own folder with the `.bas` source file and build outputs go to `asm/` and `bin/` subdirectories.
 
-#### 5. Creating New SDK Projects
+#### 6. Creating New SDK Projects
 
 Use the **IntyBASIC: New SDK Project** command to scaffold a new project with:
 - Main `.bas` file with boilerplate code
@@ -240,5 +262,3 @@ This extension is community-driven. If you find any issues, have suggestions for
 
 *Enjoy developing for the Intellivision!*
 
----
-What else do you need assistance with regarding your extension project?

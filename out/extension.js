@@ -96,7 +96,7 @@ let JZINTV_EMULATOR_PATH;
 let JZINTV_EXEC_PATH;
 let JZINTV_GROM_PATH;
 let INTYSMAP_PATH;
-let OUTPUT_DIR;
+let OUTPUT_DIR = 'bin'; // Default value
 // Initialize configuration based on mode
 function initializeConfiguration() {
     const toolchainConfig = getToolchainConfig();
@@ -108,7 +108,8 @@ function initializeConfiguration() {
         JZINTV_EXEC_PATH = getConfig('execRomPath');
         JZINTV_GROM_PATH = getConfig('gromRomPath');
         INTYSMAP_PATH = getConfig('intysmapPath');
-        OUTPUT_DIR = getConfig('outputDirectory') || 'bin';
+        const outputDirConfig = getConfig('outputDirectory');
+        OUTPUT_DIR = outputDirConfig !== undefined ? outputDirConfig : 'bin';
         // Validate standalone configuration
         if (!INTYBASIC_COMPILER_PATH || !AS1600_ASSEMBLER_PATH || !JZINTV_EMULATOR_PATH || !JZINTV_EXEC_PATH || !JZINTV_GROM_PATH) {
             vscode.window.showWarningMessage('Some IntyBASIC tool or ROM paths are not configured. Please check your extension settings.');
@@ -160,8 +161,8 @@ function activate(context) {
             return path.join(sdkPath, 'bin', `${scriptName}.BAT`);
         }
         else if (process.platform === 'darwin') {
-            // macOS uses Perl scripts
-            return scriptName; // Will be found in PATH after SDK setup
+            // macOS uses Perl scripts in bin directory
+            return path.join(sdkPath, 'bin', scriptName.toLowerCase());
         }
         else {
             throw new Error('SDK mode is not supported on Linux. Please use standalone mode.');
@@ -200,7 +201,7 @@ function activate(context) {
                 buildCommand = `cmd /c "set "INTYBASIC_INSTALL=${toolchainConfig.sdkPath}" && set "PATH=${binPath};%PATH%" && cd /d "${toolchainConfig.sdkPath}" && "${scriptPath}" ${flags.join(' ')} ${projectName}"`;
             }
             else {
-                // macOS - assume Perl scripts are in PATH after setting INTYBASIC_INSTALL
+                // macOS - use script from PATH (SDK installer adds to PATH)
                 buildCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intybuild ${flags.join(' ')} "${projectName}"`;
             }
             outputChannel.appendLine(`Command: ${buildCommand}`);
@@ -264,6 +265,7 @@ function activate(context) {
                 terminal.sendText(`.\\bin\\INTYRUN.BAT ${flags.join(' ')} ${projectName}`);
             }
             else {
+                // macOS - use script from PATH (SDK installer adds to PATH)
                 runCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intyrun ${flags.join(' ')} "${projectName}"`;
                 terminal.sendText(runCommand);
             }
@@ -299,6 +301,7 @@ function activate(context) {
                 terminal.sendText(`.\\bin\\INTYDBUG.BAT ${flags.join(' ')} ${projectName}`);
             }
             else {
+                // macOS - use script from PATH (SDK installer adds to PATH)
                 debugCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intydbug ${flags.join(' ')} "${projectName}"`;
                 terminal.sendText(debugCommand);
             }
@@ -347,6 +350,7 @@ function activate(context) {
                 newCommand = `cmd /c "set "INTYBASIC_INSTALL=${toolchainConfig.sdkPath}" && set "PATH=${binPath};%PATH%" && cd /d "${toolchainConfig.sdkPath}" && "${scriptPath}" ${args.join(' ')}"`;
             }
             else {
+                // macOS - use script from PATH (SDK installer adds to PATH)
                 newCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intynew ${args.join(' ')}`;
             }
             outputChannel.clear();

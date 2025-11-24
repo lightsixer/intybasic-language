@@ -2,6 +2,7 @@
   "name": "intybasic-language",
   "displayName": "IntyBASIC Language",
   "description": "Language support for IntyBASIC.",
+  "icon": "icon.png",
   "version": "0.0.4",
   "engines": {
     "vscode": "^1.106.1"
@@ -163,10 +164,10 @@
     "@vscode/test-electron": "^2.5.2",
     "eslint": "^9.39.1",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.3",
-    "vscode-languageclient": "^9.0.1"
+    "typescript-eslint": "^8.46.3"
   },
   "dependencies": {
+    "vscode-languageclient": "^9.0.1",
     "vscode-languageserver": "^9.0.1",
     "vscode-languageserver-textdocument": "^1.0.12"
   }
