@@ -130,6 +130,20 @@ export function activate(context: vscode.ExtensionContext) {
     // Initialize configuration based on toolchain mode
     initializeConfiguration();
 
+    // Terminal references for reuse
+    let emulatorTerminal: vscode.Terminal | undefined;
+    let debuggerTerminal: vscode.Terminal | undefined;
+
+    // Helper function to get or create terminal
+    function getOrCreateTerminal(name: string, terminalRef: vscode.Terminal | undefined): vscode.Terminal {
+        // Check if terminal still exists
+        if (terminalRef && vscode.window.terminals.includes(terminalRef)) {
+            return terminalRef;
+        }
+        // Create new terminal
+        return vscode.window.createTerminal({ name });
+    }
+
     // Start the language server
     const serverModule = context.asAbsolutePath(
         path.join('out', 'server', 'intybasicServer.js')
@@ -286,19 +300,17 @@ export function activate(context: vscode.ExtensionContext) {
         try {
             let runCommand: string;
 
-            const terminal = vscode.window.createTerminal({
-                name: 'IntyBASIC Emulator'
-            });
-            terminal.show();
+            emulatorTerminal = getOrCreateTerminal('IntyBASIC Emulator', emulatorTerminal);
+            emulatorTerminal.show();
             
             if (process.platform === 'win32') {
                 // Rely on system PATH and INTYBASIC_INSTALL from SDK installation
-                terminal.sendText(`cd "${toolchainConfig.sdkPath}"`);
-                terminal.sendText(`.\\bin\\INTYRUN.BAT ${flags.join(' ')} ${projectName}`);
+                emulatorTerminal.sendText(`cd "${toolchainConfig.sdkPath}"`);
+                emulatorTerminal.sendText(`.\\bin\\INTYRUN.BAT ${flags.join(' ')} ${projectName}`);
             } else {
                 // macOS - use script from PATH (SDK installer adds to PATH)
                 runCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intyrun ${flags.join(' ')} "${projectName}"`;
-                terminal.sendText(runCommand);
+                emulatorTerminal.sendText(runCommand);
             }
             
         } catch (error: any) {
@@ -327,19 +339,17 @@ export function activate(context: vscode.ExtensionContext) {
         try {
             let debugCommand: string;
 
-            const terminal = vscode.window.createTerminal({
-                name: 'IntyBASIC Debugger'
-            });
-            terminal.show();
+            debuggerTerminal = getOrCreateTerminal('IntyBASIC Debugger', debuggerTerminal);
+            debuggerTerminal.show();
             
             if (process.platform === 'win32') {
                 // Rely on system PATH and INTYBASIC_INSTALL from SDK installation
-                terminal.sendText(`cd "${toolchainConfig.sdkPath}"`);
-                terminal.sendText(`.\\bin\\INTYDBUG.BAT ${flags.join(' ')} ${projectName}`);
+                debuggerTerminal.sendText(`cd "${toolchainConfig.sdkPath}"`);
+                debuggerTerminal.sendText(`.\\bin\\INTYDBUG.BAT ${flags.join(' ')} ${projectName}`);
             } else {
                 // macOS - use script from PATH (SDK installer adds to PATH)
                 debugCommand = `INTYBASIC_INSTALL="${toolchainConfig.sdkPath}" intydbug ${flags.join(' ')} "${projectName}"`;
-                terminal.sendText(debugCommand);
+                debuggerTerminal.sendText(debugCommand);
             }
             
         } catch (error: any) {
