@@ -26,7 +26,22 @@ This extension provides comprehensive language support and integrated build tool
 
 ## 🚀 Getting Started
 
-### 1. Prerequisites
+### Choosing Your Toolchain Mode
+
+The extension supports two toolchain modes:
+
+1. **Standalone Mode** (default): You configure individual tool paths and manage your own IntyBASIC installation
+2. **SDK Mode**: Uses the IntyBASIC SDK wrapper scripts that bundle all tools together
+
+Choose the mode that matches your setup in Settings > IntyBASIC > Toolchain Mode.
+
+---
+
+### Option A: Standalone Mode Setup
+
+This is the traditional approach where you configure each tool individually.
+
+#### 1. Prerequisites
 
 You must have the following external command-line tools installed and accessible on your system:
 
@@ -36,13 +51,14 @@ You must have the following external command-line tools installed and accessible
 * The **IntyBasic library files** (`intybasic_prologue.asm`, etc.)
 * The **jzIntv ROM files** (`exec.bin` and `grom.bin`)
 
-### 2. Extension Configuration
+#### 2. Extension Configuration
 
 After installing the extension, you must configure the paths to your tools.
 
 1.  Go to **Settings** (`Ctrl+,` or `Cmd+,`).
 2.  Search for **`IntyBasic`**.
-3.  Configure the following paths and settings:
+3.  Set **Toolchain Mode** to `standalone` (this is the default).
+4.  Configure the following paths and settings:
 
 | Setting | Description |
 | :--- | :--- |
@@ -55,6 +71,50 @@ After installing the extension, you must configure the paths to your tools.
 | `intybasic.intysmapPath` | (Optional) Path to the `intysmap` utility for debug builds. May not be needed with newer AS1600 versions. |
 | `intybasic.enableIntellivoice` | (Optional) Enable Intellivoice support when running emulator. Default: false. |
 | `intybasic.enableJlpSavegame` | (Optional) Enable JLP savegame support for FLASH persistence. Savegame uses ROM name + `.sav`. Default: false. |
+
+---
+
+### Option B: SDK Mode Setup
+
+The IntyBASIC SDK is a community-maintained bundle that includes wrapper scripts for easy project management.
+
+#### 1. Install the IntyBASIC SDK
+
+Download and install the IntyBASIC SDK from the official source. The SDK includes:
+- IntyBASIC compiler, AS1600 assembler, jzIntv emulator
+- Wrapper scripts (INTYBUILD, INTYRUN, INTYDBUG, INTYNEW)
+- Project management structure (Projects/, Examples/, Contributions/)
+- All required ROM and library files
+
+#### 2. Extension Configuration
+
+1.  Go to **Settings** (`Ctrl+,` or `Cmd+,`).
+2.  Search for **`IntyBasic`**.
+3.  Set **Toolchain Mode** to `sdk`.
+4.  Set **SDK Path** to your SDK installation directory (e.g., `C:\Tools\IntyBASIC SDK` on Windows).
+
+#### 3. Important: Restart VS Code
+
+After installing the SDK, **restart VS Code** so it can inherit the environment variables set by the SDK installer (particularly `PATH` and `INTYBASIC_INSTALL`).
+
+#### 4. SDK Project Structure
+
+The SDK expects projects in specific folders:
+- `Projects/` - Your custom projects
+- `Examples/` - SDK example projects
+- `Contributions/` - Community contributed projects
+
+Each project has its own folder with the `.bas` source file and build outputs go to `asm/` and `bin/` subdirectories.
+
+#### 5. Creating New SDK Projects
+
+Use the **IntyBASIC: New SDK Project** command to scaffold a new project with:
+- Main `.bas` file with boilerplate code
+- Optional title screen template (`title.bas`)
+- Proper folder structure
+- SDK-compatible project organization
+
+The new project will be created in the SDK's `Projects/` folder and automatically opened.
 
 ---
 
@@ -79,9 +139,18 @@ The extension provides several commands accessible through the **Command Palette
 | **IntyBASIC: Run ROM in Debugger** | Launches jzIntv with debugger mode (`-d`) and source map integration. Shows your BASIC source alongside assembly in the debugger. |
 | **IntyBASIC: Debug Build and Run in Debugger** | Combines debug build and debugger launch. |
 
+### SDK-Specific Commands
+
+These commands are only available when **Toolchain Mode** is set to `sdk`:
+
+| Command | Description |
+| :--- | :--- |
+| **IntyBASIC: New SDK Project** | Creates a new project in the SDK's `Projects/` folder with scaffolded code and opens the project folder. |
+
 ### Build Output
 
-* **Regular builds**: Compiled files go to `asm/` (assembly) and `bin/` (ROM) folders relative to your source file.
+* **Standalone mode**: Compiled files go to `asm/` (assembly) and `bin/` (ROM) folders relative to your source file.
+* **SDK mode**: Build outputs follow the same structure but are managed by the SDK wrapper scripts.
 * **Debug builds**: Compiled files go to `asm-debug/` (assembly) and `debug/` (ROM + debug symbols) folders.
 
 ### Using the Debugger
