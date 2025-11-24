@@ -2,6 +2,30 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.1.0] - 2025-11-23
+
+### Added
+- **IntyBASIC SDK Support**: Full integration with the IntyBASIC SDK for streamlined development
+  - New dual-mode toolchain: Standalone (individual tools) or SDK (wrapper scripts)
+  - SDK wrapper command support: INTYBUILD, INTYRUN, INTYDBUG, INTYNEW
+  - "IntyBASIC: New SDK Project" command for scaffolding new projects
+  - Automatic SDK project detection (Projects/, Examples/, Contributions/ folders)
+  - Cross-platform support: Windows (.BAT scripts) and macOS (Perl scripts)
+- Extension icon (icon.png)
+- Comprehensive README documentation for both standalone and SDK modes
+- macOS-specific setup instructions including Documents folder permissions
+
+### Changed
+- Configuration UI improvements: SDK settings prioritized with `order` property
+- Enhanced setting descriptions with Markdown formatting
+- Moved `vscode-languageclient` from devDependencies to dependencies for proper packaging
+
+### Fixed
+- OUTPUT_DIR initialization bug that caused "path must be of type string" error in standalone mode
+- Extension activation failure on macOS due to missing vscode-languageclient module
+- Cross-platform compatibility for SDK commands on macOS
+- .vscodeignore to exclude unnecessary files from VSIX package
+
 ## [0.0.4] - 2025-11-23
 
 ### Added

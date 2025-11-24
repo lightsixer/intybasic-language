@@ -3,7 +3,7 @@
   "displayName": "IntyBASIC Language",
   "description": "Language support for IntyBASIC.",
   "icon": "icon.png",
-  "version": "0.0.4",
+  "version": "0.1.0",
   "engines": {
     "vscode": "^1.106.1"
   },
