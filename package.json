@@ -4,7 +4,7 @@
   "description": "Language support for IntyBASIC.",
   "publisher": "lightsixer",
   "icon": "icon.png",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/lightsixer/intybasic-language.git"
@@ -77,10 +77,15 @@
           "default": false,
           "description": "Enable Intellivoice support when running the emulator (adds -v1 flag)."
         },
+        "intybasic.enableJlp": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable JLP (Joe Zbiciak's Learning Platform) support in the emulator (adds --jlp flag)."
+        },
         "intybasic.enableJlpSavegame": {
           "type": "boolean",
           "default": false,
-          "description": "Enable JLP savegame support for FLASH persistence. Savegame file will use ROM name + .sav extension."
+          "description": "Enable JLP savegame support for FLASH persistence (requires Enable JLP to be checked). Savegame file will use ROM name + .sav extension."
         }
       }
     },

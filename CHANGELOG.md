@@ -2,6 +2,18 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.1.2] - 2025-11-24
+
+### Added
+- Separate "Enable JLP" setting for basic JLP support without savegame
+
+### Changed
+- JLP savegame setting now requires JLP to be enabled first
+- Improved JLP flag logic to properly handle --jlp and --jlp-savegame independently
+
+### Fixed
+- JLP flags were being added unconditionally even when disabled in settings
+
 ## [0.1.1] - 2025-11-24
 
 ### Fixed

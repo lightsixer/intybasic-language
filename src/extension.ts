@@ -82,6 +82,7 @@ function getConfigBoolean(key: string): boolean {
 
 // Global configuration - will be initialized based on mode
 const ENABLE_INTELLIVOICE = getConfigBoolean('enableIntellivoice');
+const ENABLE_JLP = getConfigBoolean('enableJlp');
 const ENABLE_JLP_SAVEGAME = getConfigBoolean('enableJlpSavegame'); 
 
 // Standalone mode paths (only used when mode is 'standalone')
@@ -716,9 +717,14 @@ export function activate(context: vscode.ExtensionContext) {
         if (ENABLE_INTELLIVOICE) {
             args.push('-v1');
         }
-        // Add JLP savegame support - always use ROM name + .sav
-        const savegamePath = romPath.replace(/\.bin$/, '.sav');
-        args.push('--jlp', `--jlp-savegame="${savegamePath}"`);
+        if (ENABLE_JLP) {
+            args.push('--jlp');
+            if (ENABLE_JLP_SAVEGAME) {
+                // Add JLP savegame support - use ROM name + .sav
+                const savegamePath = romPath.replace(/\.bin$/, '.sav');
+                args.push(`--jlp-savegame="${savegamePath}"`);
+            }
+        }
         args.push(`"${romPath}"`);
         
         // Detect if we're on Windows (PowerShell) or Unix (bash/zsh)
@@ -812,9 +818,14 @@ export function activate(context: vscode.ExtensionContext) {
         if (ENABLE_INTELLIVOICE) {
             args.push('-v1');
         }
-        // Add JLP savegame support - always use ROM name + .sav
-        const savegamePath = romPath.replace(/\.bin$/, '.sav');
-        args.push('--jlp', `--jlp-savegame="${savegamePath}"`);
+        if (ENABLE_JLP) {
+            args.push('--jlp');
+            if (ENABLE_JLP_SAVEGAME) {
+                // Add JLP savegame support - use ROM name + .sav
+                const savegamePath = romPath.replace(/\.bin$/, '.sav');
+                args.push(`--jlp-savegame="${savegamePath}"`);
+            }
+        }
         args.push(`"${romPath}"`);
         
         // Detect if we're on Windows (PowerShell) or Unix (bash/zsh)
