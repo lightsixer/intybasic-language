@@ -723,7 +723,8 @@ function activate(context) {
     // 1. Build Command: Transpile and Assemble
     let disposableBuild = vscode.commands.registerCommand('intybasic.build', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
             return;
         }
         const toolchainConfig = getToolchainConfig();
@@ -738,7 +739,8 @@ function activate(context) {
     // 2. Run Command
     let disposableRun = vscode.commands.registerCommand('intybasic.run', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
             return;
         }
         const toolchainConfig = getToolchainConfig();
@@ -752,7 +754,8 @@ function activate(context) {
     // 3. Build and Run Command
     let disposableBuildAndRun = vscode.commands.registerCommand('intybasic.buildAndRun', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
             return;
         }
         const toolchainConfig = getToolchainConfig();
@@ -773,7 +776,8 @@ function activate(context) {
     // 4. Clean Command
     let disposableClean = vscode.commands.registerCommand('intybasic.clean', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
             return;
         }
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
@@ -818,7 +822,8 @@ function activate(context) {
     // 5. Debug Build Command
     let disposableDebugBuild = vscode.commands.registerCommand('intybasic.debugBuild', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
             return;
         }
         const toolchainConfig = getToolchainConfig();
@@ -833,7 +838,8 @@ function activate(context) {
     // 6. Debug Run Command
     let disposableDebugRun = vscode.commands.registerCommand('intybasic.debugRun', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
             return;
         }
         const toolchainConfig = getToolchainConfig();
@@ -847,7 +853,8 @@ function activate(context) {
     // 7. Debug Build and Run Command
     let disposableDebugBuildAndRun = vscode.commands.registerCommand('intybasic.debugBuildAndRun', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) {
+        if (!editor || editor.document.uri.scheme !== 'file') {
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
             return;
         }
         const toolchainConfig = getToolchainConfig();

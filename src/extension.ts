@@ -835,7 +835,10 @@ export function activate(context: vscode.ExtensionContext) {
 	// 1. Build Command: Transpile and Assemble
     let disposableBuild = vscode.commands.registerCommand('intybasic.build', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) { return; }
+        if (!editor || editor.document.uri.scheme !== 'file') { 
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            return; 
+        }
 
         const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM...');
@@ -852,7 +855,10 @@ export function activate(context: vscode.ExtensionContext) {
     // 2. Run Command
     let disposableRun = vscode.commands.registerCommand('intybasic.run', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) { return; }
+        if (!editor || editor.document.uri.scheme !== 'file') { 
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            return; 
+        }
         
         const toolchainConfig = getToolchainConfig();
         if (toolchainConfig.mode === 'sdk') {
@@ -865,7 +871,10 @@ export function activate(context: vscode.ExtensionContext) {
     // 3. Build and Run Command
     let disposableBuildAndRun = vscode.commands.registerCommand('intybasic.buildAndRun', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) { return; }
+        if (!editor || editor.document.uri.scheme !== 'file') { 
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            return; 
+        }
 
         const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM...');
@@ -887,7 +896,10 @@ export function activate(context: vscode.ExtensionContext) {
     // 4. Clean Command
     let disposableClean = vscode.commands.registerCommand('intybasic.clean', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) { return; }
+        if (!editor || editor.document.uri.scheme !== 'file') { 
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            return; 
+        }
 
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
         const fileDir = path.dirname(editor.document.fileName);
@@ -935,7 +947,10 @@ export function activate(context: vscode.ExtensionContext) {
     // 5. Debug Build Command
     let disposableDebugBuild = vscode.commands.registerCommand('intybasic.debugBuild', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) { return; }
+        if (!editor || editor.document.uri.scheme !== 'file') { 
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            return; 
+        }
 
         const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM (Debug)...');
@@ -952,7 +967,10 @@ export function activate(context: vscode.ExtensionContext) {
     // 6. Debug Run Command
     let disposableDebugRun = vscode.commands.registerCommand('intybasic.debugRun', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) { return; }
+        if (!editor || editor.document.uri.scheme !== 'file') { 
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            return; 
+        }
         
         const toolchainConfig = getToolchainConfig();
         if (toolchainConfig.mode === 'sdk') {
@@ -965,7 +983,10 @@ export function activate(context: vscode.ExtensionContext) {
     // 7. Debug Build and Run Command
     let disposableDebugBuildAndRun = vscode.commands.registerCommand('intybasic.debugBuildAndRun', async () => {
         const editor = vscode.window.activeTextEditor;
-        if (!editor) { return; }
+        if (!editor || editor.document.uri.scheme !== 'file') { 
+            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            return; 
+        }
 
         const toolchainConfig = getToolchainConfig();
         vscode.window.showInformationMessage('Building IntyBASIC ROM (Debug)...');
