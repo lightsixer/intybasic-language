@@ -836,7 +836,7 @@ export function activate(context: vscode.ExtensionContext) {
     let disposableBuild = vscode.commands.registerCommand('intybasic.build', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.uri.scheme !== 'file') { 
-            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            vscode.window.showErrorMessage('Please open or focus an IntyBASIC (.bas) file to build.');
             return; 
         }
 
@@ -856,7 +856,7 @@ export function activate(context: vscode.ExtensionContext) {
     let disposableRun = vscode.commands.registerCommand('intybasic.run', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.uri.scheme !== 'file') { 
-            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            vscode.window.showErrorMessage('Please open or focus an IntyBASIC (.bas) file to run.');
             return; 
         }
         
@@ -872,7 +872,7 @@ export function activate(context: vscode.ExtensionContext) {
     let disposableBuildAndRun = vscode.commands.registerCommand('intybasic.buildAndRun', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.uri.scheme !== 'file') { 
-            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            vscode.window.showErrorMessage('Please open or focus an IntyBASIC (.bas) file to build and run.');
             return; 
         }
 
@@ -897,7 +897,7 @@ export function activate(context: vscode.ExtensionContext) {
     let disposableClean = vscode.commands.registerCommand('intybasic.clean', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.uri.scheme !== 'file') { 
-            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            vscode.window.showErrorMessage('Please open or focus an IntyBASIC (.bas) file to clean.');
             return; 
         }
 
@@ -948,7 +948,7 @@ export function activate(context: vscode.ExtensionContext) {
     let disposableDebugBuild = vscode.commands.registerCommand('intybasic.debugBuild', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.uri.scheme !== 'file') { 
-            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            vscode.window.showErrorMessage('Please open or focus an IntyBASIC (.bas) file to debug build.');
             return; 
         }
 
@@ -968,7 +968,7 @@ export function activate(context: vscode.ExtensionContext) {
     let disposableDebugRun = vscode.commands.registerCommand('intybasic.debugRun', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.uri.scheme !== 'file') { 
-            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            vscode.window.showErrorMessage('Please open or focus an IntyBASIC (.bas) file to run debugger.');
             return; 
         }
         
@@ -984,7 +984,7 @@ export function activate(context: vscode.ExtensionContext) {
     let disposableDebugBuildAndRun = vscode.commands.registerCommand('intybasic.debugBuildAndRun', async () => {
         const editor = vscode.window.activeTextEditor;
         if (!editor || editor.document.uri.scheme !== 'file') { 
-            vscode.window.showErrorMessage('No IntyBASIC file is open.');
+            vscode.window.showErrorMessage('Please open or focus an IntyBASIC (.bas) file to debug build and run.');
             return; 
         }
 

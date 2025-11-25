@@ -2,6 +2,13 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.1.1] - 2025-11-24
+
+### Fixed
+- Commands incorrectly treating Output channel as active editor, causing build failures on Linux
+- Terminal windows accumulating instead of being reused for emulator and debugger
+- Improved error messages to clarify users need to open or focus a .bas file
+
 ## [0.1.0] - 2025-11-23
 
 ### Added
