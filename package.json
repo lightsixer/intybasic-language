@@ -80,7 +80,7 @@
         "intybasic.enableJlp": {
           "type": "boolean",
           "default": false,
-          "description": "Enable JLP (Joe Zbiciak's Learning Platform) support in the emulator (adds --jlp flag)."
+          "description": "Enable JLP (Joe Zbiciak's Learning Platform) support in the compiler (--jlp) and the emulator (-J3)."
         },
         "intybasic.enableJlpSavegame": {
           "type": "boolean",
