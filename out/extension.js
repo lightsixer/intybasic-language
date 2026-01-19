@@ -204,7 +204,7 @@ function activate(context) {
             if (isExample) {
                 flags.push('-x');
             }
-            if (ENABLE_JLP_SAVEGAME) {
+            if (ENABLE_JLP) {
                 flags.push('-j');
             }
             if (process.platform === 'win32') {
@@ -266,6 +266,13 @@ function activate(context) {
         if (isExample) {
             flags.push('-x');
         }
+        if (ENABLE_JLP) {
+            // JLP mode 3: Accelerators + RAM enabled, flash storage present
+            flags.push('-J3');
+            if (ENABLE_JLP_SAVEGAME) {
+                flags.push('--jlp-savegame');
+            }
+        }
         try {
             let runCommand;
             emulatorTerminal = getOrCreateTerminal('IntyBASIC Emulator', emulatorTerminal);
@@ -299,6 +306,13 @@ function activate(context) {
         const flags = [];
         if (isExample) {
             flags.push('-x');
+        }
+        if (ENABLE_JLP) {
+            // JLP mode 3: Accelerators + RAM enabled, flash storage present
+            flags.push('-J3');
+            if (ENABLE_JLP_SAVEGAME) {
+                flags.push('--jlp-savegame');
+            }
         }
         try {
             let debugCommand;
@@ -422,10 +436,11 @@ function activate(context) {
         catch (e) {
             // Directories might already exist
         }
-        const transpileArgs = [
-            `"${editor.document.fileName}"`,
-            `"${asmOutputPath}"`
-        ];
+        const transpileArgs = [];
+        if (ENABLE_JLP) {
+            transpileArgs.push('--jlp');
+        }
+        transpileArgs.push(`"${editor.document.fileName}"`, `"${asmOutputPath}"`);
         if (INTYBASIC_LIBRARY_PATH) {
             transpileArgs.push(`"${INTYBASIC_LIBRARY_PATH}"`);
         }
@@ -495,10 +510,11 @@ function activate(context) {
         catch (e) {
             // Directories might already exist
         }
-        const transpileArgs = [
-            `"${editor.document.fileName}"`,
-            `"${asmOutputPath}"`
-        ];
+        const transpileArgs = [];
+        if (ENABLE_JLP) {
+            transpileArgs.push('--jlp');
+        }
+        transpileArgs.push(`"${editor.document.fileName}"`, `"${asmOutputPath}"`);
         if (INTYBASIC_LIBRARY_PATH) {
             transpileArgs.push(`"${INTYBASIC_LIBRARY_PATH}"`);
         }
@@ -624,7 +640,8 @@ function activate(context) {
             args.push('-v1');
         }
         if (ENABLE_JLP) {
-            args.push('--jlp');
+            // JLP mode 3: Accelerators + RAM enabled, flash storage present
+            args.push('-J3');
             if (ENABLE_JLP_SAVEGAME) {
                 // Add JLP savegame support - use ROM name + .sav
                 const savegamePath = romPath.replace(/\.bin$/, '.sav');
@@ -710,7 +727,8 @@ function activate(context) {
             args.push('-v1');
         }
         if (ENABLE_JLP) {
-            args.push('--jlp');
+            // JLP mode 3: Accelerators + RAM enabled, flash storage present
+            args.push('-J3');
             if (ENABLE_JLP_SAVEGAME) {
                 // Add JLP savegame support - use ROM name + .sav
                 const savegamePath = romPath.replace(/\.bin$/, '.sav');

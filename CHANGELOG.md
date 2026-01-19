@@ -2,6 +2,16 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.1.3] - 2026-01-19
+
+### Fixed
+- JLP compiler flag (--jlp) now properly added during build in both SDK and standalone modes
+- JLP emulator flag changed from incorrect --jlp to correct -J3 (JLP mode 3: accelerators + RAM + flash)
+- JLP support now works correctly for both compilation and runtime
+
+### Changed
+- Updated npm dependencies to latest compatible versions
+
 ## [0.1.2] - 2025-11-24
 
 ### Added
