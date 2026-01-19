@@ -80,10 +80,14 @@ function getConfigBoolean(key: string): boolean {
     return config.get<boolean>(key) || false;
 }
 
-// Global configuration - will be initialized based on mode
-const ENABLE_INTELLIVOICE = getConfigBoolean('enableIntellivoice');
-const ENABLE_JLP = getConfigBoolean('enableJlp');
-const ENABLE_JLP_SAVEGAME = getConfigBoolean('enableJlpSavegame'); 
+// Function to get current settings (called each time to pick up changes without reload)
+function getCurrentSettings() {
+    return {
+        ENABLE_INTELLIVOICE: getConfigBoolean('enableIntellivoice'),
+        ENABLE_JLP: getConfigBoolean('enableJlp'),
+        ENABLE_JLP_SAVEGAME: getConfigBoolean('enableJlpSavegame')
+    };
+} 
 
 // Standalone mode paths (only used when mode is 'standalone')
 let INTYBASIC_COMPILER_PATH: string | undefined;
@@ -199,6 +203,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to build ROM using SDK
     async function buildROMSdk(editor: vscode.TextEditor): Promise<boolean> {
+        const { ENABLE_JLP } = getCurrentSettings();
         const toolchainConfig = getToolchainConfig();
         if (!toolchainConfig.sdkPath) {
             vscode.window.showErrorMessage('SDK path is not configured.');
@@ -282,6 +287,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to run ROM using SDK
     async function runROMSdk(editor: vscode.TextEditor): Promise<void> {
+        const { ENABLE_JLP, ENABLE_JLP_SAVEGAME } = getCurrentSettings();
         const toolchainConfig = getToolchainConfig();
         if (!toolchainConfig.sdkPath) {
             vscode.window.showErrorMessage('SDK path is not configured.');
@@ -328,6 +334,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to run ROM in debugger using SDK
     async function runROMDebugSdk(editor: vscode.TextEditor): Promise<void> {
+        const { ENABLE_JLP, ENABLE_JLP_SAVEGAME } = getCurrentSettings();
         const toolchainConfig = getToolchainConfig();
         if (!toolchainConfig.sdkPath) {
             vscode.window.showErrorMessage('SDK path is not configured.');
@@ -457,6 +464,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to build ROM
     async function buildROM(editor: vscode.TextEditor): Promise<boolean> {
+        const { ENABLE_JLP } = getCurrentSettings();
         diagnosticCollection.clear();
 
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
@@ -566,6 +574,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to build ROM with debug symbols
     async function buildROMDebug(editor: vscode.TextEditor): Promise<boolean> {
+        const { ENABLE_JLP } = getCurrentSettings();
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
         const fileDir = path.dirname(editor.document.fileName);
         const asmDir = path.join(fileDir, 'asm-debug');
@@ -685,6 +694,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to run ROM
     async function runROM(editor: vscode.TextEditor) {
+        const { ENABLE_INTELLIVOICE, ENABLE_JLP, ENABLE_JLP_SAVEGAME } = getCurrentSettings();
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
         const fileDir = path.dirname(editor.document.fileName);
         const romPath = path.join(fileDir, OUTPUT_DIR, `${fileBaseName}.bin`);
@@ -767,6 +777,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to run ROM in debugger
     async function runROMDebug(editor: vscode.TextEditor) {
+        const { ENABLE_INTELLIVOICE, ENABLE_JLP, ENABLE_JLP_SAVEGAME } = getCurrentSettings();
         const fileBaseName = path.basename(editor.document.fileName, '.bas');
         const fileDir = path.dirname(editor.document.fileName);
         const romPath = path.join(fileDir, 'debug', `${fileBaseName}.bin`);

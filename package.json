@@ -4,7 +4,7 @@
   "description": "Language support for IntyBASIC.",
   "publisher": "lightsixer",
   "icon": "icon.png",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "repository": {
     "type": "git",
     "url": "https://github.com/lightsixer/intybasic-language.git"

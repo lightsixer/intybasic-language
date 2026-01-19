@@ -2,6 +2,12 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.1.4] - 2026-01-19
+
+### Fixed
+- Settings changes (JLP, Intellivoice) now take effect immediately without requiring VS Code reload
+- Configuration values are now read dynamically on each build/run command
+
 ## [0.1.3] - 2026-01-19
 
 ### Fixed
