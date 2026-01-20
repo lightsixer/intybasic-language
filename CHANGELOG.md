@@ -2,6 +2,16 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.1.5] - 2026-01-19
+
+### Added
+- New setting "Enable SDK Use BIN Format" to use BIN+CFG output format in SDK mode (requires updated SDK batch files)
+- SDK mode now passes -b flag to INTYBUILD.BAT, INTYRUN.BAT, and INTYDBUG.BAT when enabled
+- BIN+CFG format required for JLP support in SDK mode
+
+### Changed
+- Improved setting display names for better clarity
+
 ## [0.1.4] - 2026-01-19
 
 ### Fixed

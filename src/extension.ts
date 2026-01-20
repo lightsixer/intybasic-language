@@ -84,8 +84,9 @@ function getConfigBoolean(key: string): boolean {
 function getCurrentSettings() {
     return {
         ENABLE_INTELLIVOICE: getConfigBoolean('enableIntellivoice'),
-        ENABLE_JLP: getConfigBoolean('enableJlp'),
-        ENABLE_JLP_SAVEGAME: getConfigBoolean('enableJlpSavegame')
+        ENABLE_JLP: getConfigBoolean('enableJLP'),
+        ENABLE_JLP_SAVEGAME: getConfigBoolean('enableJLPSavegame'),
+        SDK_USE_BIN_FORMAT: getConfigBoolean('enableSDKUseBINFormat')
     };
 } 
 
@@ -203,7 +204,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to build ROM using SDK
     async function buildROMSdk(editor: vscode.TextEditor): Promise<boolean> {
-        const { ENABLE_JLP } = getCurrentSettings();
+        const { ENABLE_JLP, SDK_USE_BIN_FORMAT } = getCurrentSettings();
         const toolchainConfig = getToolchainConfig();
         if (!toolchainConfig.sdkPath) {
             vscode.window.showErrorMessage('SDK path is not configured.');
@@ -232,6 +233,9 @@ export function activate(context: vscode.ExtensionContext) {
             }
             if (ENABLE_JLP) {
                 flags.push('-j');
+            }
+            if (SDK_USE_BIN_FORMAT) {
+                flags.push('-b');
             }
 
             if (process.platform === 'win32') {
@@ -287,7 +291,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to run ROM using SDK
     async function runROMSdk(editor: vscode.TextEditor): Promise<void> {
-        const { ENABLE_JLP, ENABLE_JLP_SAVEGAME } = getCurrentSettings();
+        const { ENABLE_JLP, ENABLE_JLP_SAVEGAME, SDK_USE_BIN_FORMAT } = getCurrentSettings();
         const toolchainConfig = getToolchainConfig();
         if (!toolchainConfig.sdkPath) {
             vscode.window.showErrorMessage('SDK path is not configured.');
@@ -302,6 +306,9 @@ export function activate(context: vscode.ExtensionContext) {
         const flags: string[] = [];
         if (isExample) {
             flags.push('-x');
+        }
+        if (SDK_USE_BIN_FORMAT) {
+            flags.push('-b');
         }
         if (ENABLE_JLP) {
             // JLP mode 3: Accelerators + RAM enabled, flash storage present
@@ -334,7 +341,7 @@ export function activate(context: vscode.ExtensionContext) {
 
     // Helper function to run ROM in debugger using SDK
     async function runROMDebugSdk(editor: vscode.TextEditor): Promise<void> {
-        const { ENABLE_JLP, ENABLE_JLP_SAVEGAME } = getCurrentSettings();
+        const { ENABLE_JLP, ENABLE_JLP_SAVEGAME, SDK_USE_BIN_FORMAT } = getCurrentSettings();
         const toolchainConfig = getToolchainConfig();
         if (!toolchainConfig.sdkPath) {
             vscode.window.showErrorMessage('SDK path is not configured.');
@@ -349,6 +356,9 @@ export function activate(context: vscode.ExtensionContext) {
         const flags: string[] = [];
         if (isExample) {
             flags.push('-x');
+        }
+        if (SDK_USE_BIN_FORMAT) {
+            flags.push('-b');
         }
         if (ENABLE_JLP) {
             // JLP mode 3: Accelerators + RAM enabled, flash storage present

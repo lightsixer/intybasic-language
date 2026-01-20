@@ -4,7 +4,7 @@
   "description": "Language support for IntyBASIC.",
   "publisher": "lightsixer",
   "icon": "icon.png",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "repository": {
     "type": "git",
     "url": "https://github.com/lightsixer/intybasic-language.git"
@@ -77,15 +77,20 @@
           "default": false,
           "description": "Enable Intellivoice support when running the emulator (adds -v1 flag)."
         },
-        "intybasic.enableJlp": {
+        "intybasic.enableJLP": {
           "type": "boolean",
           "default": false,
           "description": "Enable JLP (Joe Zbiciak's Learning Platform) support in the compiler (--jlp) and the emulator (-J3)."
         },
-        "intybasic.enableJlpSavegame": {
+        "intybasic.enableJLPSavegame": {
           "type": "boolean",
           "default": false,
           "description": "Enable JLP savegame support for FLASH persistence (requires Enable JLP to be checked). Savegame file will use ROM name + .sav extension."
+        },
+        "intybasic.enableSDKUseBINFormat": {
+          "type": "boolean",
+          "default": false,
+          "description": "SDK Mode: Use BIN+CFG output format instead of ROM format (adds -b flag to build/run/debug). Requires updated INTYBUILD.BAT, INTYRUN.BAT, and INTYDBUG.BAT scripts (available in AtariAge forum post until SDK package is updated). Required for JLP support in SDK mode."
         }
       }
     },
