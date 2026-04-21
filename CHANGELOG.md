@@ -2,6 +2,14 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.1.6] - 2026-04-21
+
+### Added
+- COLOR keyword now appears in autocomplete suggestions for PRINT statements
+
+### Fixed
+- Keyword and function suggestions are now suppressed when typing in comments (after ' character)
+
 ## [0.1.5] - 2026-01-19
 
 ### Added

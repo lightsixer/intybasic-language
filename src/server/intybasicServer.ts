@@ -111,6 +111,7 @@ const KEYWORDS = [
     { name: 'SUB', description: 'Alternative keyword for PROCEDURE.' },
     { name: 'PRINT', description: 'Display text or graphics on screen. Example: `PRINT AT 100, "Hello"`' },
     { name: 'AT', description: 'Specify screen position for PRINT. Example: `PRINT AT 100, "Text"`' },
+    { name: 'COLOR', description: 'Specify text color for PRINT. Example: `PRINT AT 100 COLOR 6, "Text"`' },
     { name: 'INPUT', description: 'Read input from controllers. Not for text input.' },
     { name: 'POKE', description: 'Write a value to memory address. Example: `POKE $1234, 100`' },
     { name: 'PEEK', description: 'Read a value from memory address. Example: `x = PEEK($1234)`' },
@@ -318,6 +319,22 @@ const VARIABLES = [
 // Completion provider
 connection.onCompletion(
     (_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
+        // Check if we're inside a comment
+        const document = documents.get(_textDocumentPosition.textDocument.uri);
+        if (document) {
+            const position = _textDocumentPosition.position;
+            const line = document.getText({
+                start: { line: position.line, character: 0 },
+                end: { line: position.line, character: position.character }
+            });
+            
+            // IntyBASIC comments start with ' character
+            // If there's an apostrophe before the cursor, we're in a comment
+            if (line.indexOf("'") !== -1) {
+                return []; // Suppress all completions in comments
+            }
+        }
+
         const items: CompletionItem[] = [];
 
         // Add keywords
