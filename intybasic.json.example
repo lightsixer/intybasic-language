@@ -1,0 +1,20 @@
+{
+  "mainFile": "src/main.bas",
+  "projectName": "MyGame",
+  "compilerSettings": {
+    "enableJLP": true,
+    "enableIntellivoice": false,
+    "enableJLPSavegame": true,
+    "enableSDKUseBINFormat": false
+  },
+  "toolFlags": {
+    "compilerFlags": "--warnings",
+    "assemblerFlags": "",
+    "emulatorFlags": "--kbdhackfile=mykeys.cfg"
+  },
+  "sdkToolFlags": {
+    "buildFlags": "",
+    "runFlags": "",
+    "debugFlags": "-s"
+  }
+}

@@ -2,6 +2,45 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.2.0] - 2026-04-22
+
+### Added
+- **Project File Support**: Optional `intybasic.json` project files for multi-file project management
+  - Specify main .BAS file to build regardless of active editor file
+  - Custom ROM output naming via `projectName` field
+  - Project-specific compiler settings that override workspace settings
+  - Support for custom tool flags per project
+- **Tool Flags System**: Add custom command-line flags to tools
+  - `toolFlags` for standalone mode (compilerFlags, assemblerFlags, emulatorFlags)
+  - `sdkToolFlags` for SDK mode (buildFlags, runFlags, debugFlags)
+  - Enables advanced features like custom keyboard mappings, palette files, etc.
+- **Intelligent Timestamp Checking**: Only rebuild when necessary
+  - Checks ROM timestamp against ALL .bas files in workspace (supports INCLUDE'd files)
+  - Checks ROM timestamp against project file modifications
+  - Shows "up-to-date" message when no rebuild needed
+- **Create Project File Command**: Interactive project file generation
+  - Select main .BAS file from workspace
+  - Optional custom project name
+  - Generates complete configuration with all current settings
+  - Includes empty tool flags sections for documentation
+- **Create .gitignore Command**: Version control support
+  - Generates/updates .gitignore with IntyBASIC build directories
+  - Covers both standalone and SDK mode output folders (asm/, asm-debug/, bin/, debug/)
+  - Checks for existing entries to avoid duplicates
+- **Language Support**: Added missing keywords to autocomplete
+  - BORDER command with parameter hints
+  - SCROLL command with parameter hints
+- **Documentation**: Comprehensive PROJECT_FILE_GUIDE.md with examples and best practices
+
+### Changed
+- Build/run/debug commands now check for project file first, fall back to active editor
+- Project builds show "Building IntyBASIC ROM (project: ProjectName)..." messages
+- All generated project files include both `toolFlags` and `sdkToolFlags` sections
+
+### Fixed
+- Project file timestamps now properly trigger rebuilds when modified
+- SDK mode tool flags now correctly appended to script commands
+
 ## [0.1.6] - 2026-04-21
 
 ### Added

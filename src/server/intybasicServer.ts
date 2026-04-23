@@ -119,6 +119,8 @@ const KEYWORDS = [
     { name: 'WAIT', description: 'Pause execution. `WAIT` alone waits for frame. `WAIT n` waits n frames.' },
     { name: 'CLS', description: 'Clear the screen.' },
     { name: 'SCREEN', description: 'Set screen mode or properties. Example: `SCREEN mode`' },
+    { name: 'BORDER', description: 'Set screen border color. Example: `BORDER color` or `BORDER x, color`' },
+    { name: 'SCROLL', description: 'Scroll the screen. Example: `SCROLL x, y, mode`' },
     { name: 'DEFINE', description: 'Define graphics data. Example: `DEFINE sprite, 1, bitmap`' },
     { name: 'MODE', description: 'Set graphics or display mode.' },
     { name: 'SPRITE', description: 'Define or manipulate sprites (MOBs). Example: `SPRITE 0, x, y, card`' },
@@ -246,6 +248,25 @@ const FUNCTIONS = [
             { label: 'x', documentation: 'X coordinate' },
             { label: 'y', documentation: 'Y coordinate' },
             { label: 'card', documentation: 'Card/graphic number' }
+        ]
+    },
+    { 
+        name: 'BORDER', 
+        signature: 'BORDER [x,] color', 
+        description: 'Set the screen border color.',
+        parameters: [
+            { label: 'x', documentation: 'Optional horizontal position/offset' },
+            { label: 'color', documentation: 'Border color value (0-15)' }
+        ]
+    },
+    { 
+        name: 'SCROLL', 
+        signature: 'SCROLL x, y, mode', 
+        description: 'Scroll the screen display.',
+        parameters: [
+            { label: 'x', documentation: 'Horizontal scroll offset' },
+            { label: 'y', documentation: 'Vertical scroll offset' },
+            { label: 'mode', documentation: 'Scroll mode' }
         ]
     },
     { 

@@ -4,7 +4,7 @@
   "description": "Language support for IntyBASIC.",
   "publisher": "lightsixer",
   "icon": "icon.png",
-  "version": "0.1.6",
+  "version": "0.2.0",
   "repository": {
     "type": "git",
     "url": "https://github.com/lightsixer/intybasic-language.git"
@@ -146,6 +146,14 @@
       {
         "command": "intybasic.newProject",
         "title": "IntyBASIC: New SDK Project (SDK mode only)"
+      },
+      {
+        "command": "intybasic.createProject",
+        "title": "IntyBASIC: Create Project File"
+      },
+      {
+        "command": "intybasic.createGitignore",
+        "title": "IntyBASIC: Create .gitignore"
       }
     ],
     "problemMatchers": [
