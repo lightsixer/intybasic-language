@@ -529,7 +529,8 @@ export function activate(context: vscode.ExtensionContext) {
             // JLP mode 3: Accelerators + RAM enabled, flash storage present
             flags.push('-J3');
             if (ENABLE_JLP_SAVEGAME) {
-                flags.push('--jlp-savegame');
+                // Add JLP savegame support - use project name + .sav
+                flags.push(`--jlp-savegame=${projectName}.sav`);
             }
         }
         // Add project-specific SDK run flags
@@ -583,7 +584,8 @@ export function activate(context: vscode.ExtensionContext) {
             // JLP mode 3: Accelerators + RAM enabled, flash storage present
             flags.push('-J3');
             if (ENABLE_JLP_SAVEGAME) {
-                flags.push('--jlp-savegame');
+                // Add JLP savegame support - use project name + .sav
+                flags.push(`--jlp-savegame=${projectName}.sav`);
             }
         }
         // Add project-specific SDK debug flags

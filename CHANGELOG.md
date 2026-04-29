@@ -2,6 +2,16 @@
 
 All notable changes to the "intybasic-language" extension will be documented in this file.
 
+## [0.2.1] - 2026-04-29
+
+### Fixed
+- JLP savegame command line syntax in SDK mode now correctly uses `--jlp-savegame=filename.sav` format
+- Both INTYRUN and INTYDBUG scripts now properly pass savegame filename
+
+### Changed
+- Updated README.md with comprehensive project file documentation and examples
+- Clarified that active file requirement only applies when not using project files
+
 ## [0.2.0] - 2026-04-22
 
 ### Added

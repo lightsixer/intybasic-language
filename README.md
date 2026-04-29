@@ -14,6 +14,11 @@ This extension provides comprehensive language support and integrated build tool
   * Go to Definition (F12) for variables, constants, procedures, and labels
   * Find All References (Shift+F12) to locate symbol usage throughout your code
   * Variable limits linter warns when approaching memory limits (228 8-bit / 110 16-bit variables)
+* **Project File Support:** Optional `intybasic.json` files for multi-file project management:
+  * Specify a main `.bas` file that always gets built regardless of active editor
+  * Custom ROM output naming
+  * Project-specific compiler settings and tool flags
+  * Smart rebuild detection checks timestamps of all `.bas` files (including `INCLUDE`'d files)
 * **Integrated Build Chain:** Seamlessly compile your `.bas` files to `.asm` using the **IntyBasic cross-compiler** and assemble them into a runable `.bin` ROM file using **AS1600**.
 * **Emulator Launch:** Directly launch and run your compiled ROM files in the **jzIntv emulator** from within VS Code.
 * **Debug Support:** Build with source maps and symbol files, then launch jzIntv's debugger with your IntyBASIC source code visible alongside the disassembly.
@@ -150,6 +155,13 @@ The extension provides several commands accessible through the **Command Palette
 | **IntyBASIC: Run ROM in Debugger** | Launches jzIntv with debugger mode (`-d`) and source map integration. Shows your BASIC source alongside assembly in the debugger. |
 | **IntyBASIC: Debug Build and Run in Debugger** | Combines debug build and debugger launch. |
 
+### Project Management Commands
+
+| Command | Description |
+| :--- | :--- |
+| **IntyBASIC: Create Project File** | Interactively creates an `intybasic.json` project file in your workspace root. Select a main `.bas` file and optionally provide a custom project name. |  
+| **IntyBASIC: Create .gitignore** | Creates or updates `.gitignore` in your workspace root to exclude IntyBASIC build directories (`asm/`, `bin/`, `debug/`, `asm-debug/`). |
+
 ### SDK-Specific Commands
 
 These commands are only available when **Toolchain Mode** is set to `sdk`:
@@ -194,7 +206,113 @@ Type `?` in the debugger for help on available commands.
 
 ---
 
-## 💡 IntelliSense Features
+## � Project Files (Optional)
+
+For multi-file projects or when you want to specify which `.bas` file to build regardless of what's open in the editor, create an `intybasic.json` file in your workspace root.
+
+### Quick Start
+
+Use the **IntyBASIC: Create Project File** command from the Command Palette to interactively create a project file. The command will:
+1. Show a picker of all `.bas` files in your workspace
+2. Prompt for an optional custom ROM name
+3. Generate a complete `intybasic.json` with all your current settings
+
+### Project File Structure
+
+```json
+{
+  "mainFile": "src/mygame.bas",
+  "projectName": "MyGame",
+  "compilerSettings": {
+    "enableJLP": true,
+    "enableIntellivoice": false,
+    "enableJLPSavegame": true,
+    "enableSDKUseBINFormat": false
+  },
+  "toolFlags": {
+    "compilerFlags": "--warnings",
+    "assemblerFlags": "",
+    "emulatorFlags": "--kbdhackfile=mykeys.cfg"
+  },
+  "sdkToolFlags": {
+    "buildFlags": "",
+    "runFlags": "",
+    "debugFlags": "-s"
+  }
+}
+```
+
+### Configuration Fields
+
+| Field | Required | Description |
+| :--- | :---: | :--- |
+| `mainFile` | ✅ | Relative path to the main `.bas` file to build (e.g., `"src/main.bas"`). |
+| `projectName` | ⬜ | Custom name for ROM output files (e.g., `"MyGame"` → `bin/MyGame.bin`). If omitted, uses the source filename. |
+| `compilerSettings` | ⬜ | Override workspace settings for JLP, Intellivoice, and other compiler flags. |
+| `toolFlags` | ⬜ | Custom command-line flags for **standalone mode** tools (compiler, assembler, emulator). |
+| `sdkToolFlags` | ⬜ | Custom command-line flags for **SDK mode** wrapper scripts (INTYBUILD, INTYRUN, INTYDBUG). |
+
+### Benefits
+
+- **Always build the right file:** Build commands use `mainFile` instead of the active editor file
+- **Custom ROM naming:** Use `projectName` for clean ROM filenames (e.g., `MyGame.bin` instead of `main.bin`)
+- **Project-specific settings:** Override workspace settings per project
+- **Advanced tool flags:** Pass custom arguments to compiler, assembler, or emulator (e.g., keyboard mappings, palette files)
+- **Smart rebuilds:** Extension checks timestamps of ALL `.bas` files and the project file itself—only rebuilds when something actually changed
+
+### Tool Flags
+
+**Standalone Mode** (`toolFlags`):
+- `compilerFlags`: Passed to `intybasic` compiler (e.g., `"--warnings"`, `"--no-color"`)
+- `assemblerFlags`: Passed to `as1600` assembler (e.g., `""` — avoid `-l` flag as it prevents binary output)
+- `emulatorFlags`: Passed to `jzintv` emulator (e.g., `"--kbdhackfile=keys.cfg"`, `"--gfx=sw,0"`, `"--audio=alsa"` on Linux)
+
+**SDK Mode** (`sdkToolFlags`):
+- `buildFlags`: Passed to `INTYBUILD.BAT` / `INTYBUILD` script
+- `runFlags`: Passed to `INTYRUN.BAT` / `INTYRUN` script
+- `debugFlags`: Passed to `INTYDBUG.BAT` / `INTYDBUG` script (e.g., `"-s"` for step-by-step)
+
+### Example Use Cases
+
+**Multi-file project with INCLUDE statements:**
+```json
+{
+  "mainFile": "src/main.bas",
+  "projectName": "SpaceAdventure"
+}
+```
+The extension will detect changes in ANY `.bas` file (including included files) and rebuild only when needed.
+
+**Custom emulator configuration:**
+```json
+{
+  "mainFile": "game.bas",
+  "toolFlags": {
+    "emulatorFlags": "--kbdhackfile=wasd.cfg --audio=alsa"
+  }
+}
+```
+
+**JLP-enabled project with warnings:**
+```json
+{
+  "mainFile": "rpg.bas",
+  "projectName": "MyRPG",
+  "compilerSettings": {
+    "enableJLP": true,
+    "enableJLPSavegame": true
+  },
+  "toolFlags": {
+    "compilerFlags": "--warnings"
+  }
+}
+```
+
+For complete documentation, see [PROJECT_FILE_GUIDE.md](PROJECT_FILE_GUIDE.md) in the extension folder.
+
+---
+
+## �💡 IntelliSense Features
 
 The extension includes a full-featured language server that provides intelligent code assistance:
 
@@ -240,7 +358,7 @@ The extension tracks your variable usage and warns you when approaching IntyBASI
 
 ## 🐞 Known Issues
 
-* Compilation requires the **active file** in the editor to be the `.bas` source file you intend to build.
+* When **not using a project file**, compilation requires the **active file** in the editor to be the `.bas` source file you intend to build. (Project files solve this by specifying a main file.)
 * Debug integration with jzIntv is terminal-based; there is no integrated graphical debugger UI within VS Code.
 
 ## 🤝 Contribution
